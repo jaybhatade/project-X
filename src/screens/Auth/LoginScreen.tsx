@@ -24,7 +24,8 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
-      navigation.navigate('Home');
+      // The navigation will be handled automatically by the AppNavigator
+      // due to the user state change
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to login. Please try again.');
     } finally {

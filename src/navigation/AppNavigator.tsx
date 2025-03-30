@@ -25,7 +25,6 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName={user ? "Home" : "Onboarding"}
         screenOptions={{
           headerShown: false,
         }}
@@ -33,13 +32,23 @@ export default function AppNavigator() {
         {!user ? (
           // Auth Stack
           <>
-            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen 
+              name="Onboarding" 
+              component={OnboardingScreen}
+              options={{ gestureEnabled: false }}
+            />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Signup" component={SignupScreen} />
           </>
         ) : (
           // App Stack
-          <Stack.Screen name="Home" component={HomeScreen} />
+          <>
+            <Stack.Screen 
+              name="Home" 
+              component={HomeScreen}
+              options={{ gestureEnabled: false }}
+            />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

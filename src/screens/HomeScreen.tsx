@@ -15,7 +15,8 @@ export default function HomeScreen() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigation.navigate('Onboarding');
+      // The navigation will be handled automatically by the AppNavigator
+      // due to the user state change
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to logout. Please try again.');
     }
@@ -46,7 +47,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Balance Card */}
-        <View className={`p-6 rounded-2xl mb-8 ${
+        <View className={`p-6 rounded-xl mb-8 ${
           isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
         }`}>
           <Text className="text-white font-montserrat-medium mb-2">

@@ -30,7 +30,8 @@ export default function SignupScreen() {
     try {
       setLoading(true);
       await createUserWithEmailAndPassword(auth, email, password);
-      navigation.navigate('Home');
+      // The navigation will be handled automatically by the AppNavigator
+      // due to the user state change
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to sign up. Please try again.');
     } finally {
