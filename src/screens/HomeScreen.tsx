@@ -35,7 +35,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             onPress={handleLogout}
             className={`p-2 rounded-full ${
-              isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
+            isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
             }`}
           >
             <Text className={`font-montserrat-medium ${
@@ -112,7 +112,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Recent Transactions */}
-        <View>
+        <View className="mb-8">
           <Text className={`text-lg font-montserrat-semibold mb-4 ${
             isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
           }`}>
@@ -154,7 +154,64 @@ export default function HomeScreen() {
             ))}
           </View>
         </View>
+
+        {/* Budget Overview */}
+        <View className="mb-8">
+          <Text className={`text-lg font-montserrat-semibold mb-4 ${
+            isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+          }`}>
+            Budget Overview
+          </Text>
+          <View className="space-y-3">
+            {['Groceries', 'Entertainment', 'Transport'].map((category, index) => (
+              <View key={index} className="flex-row justify-between items-center">
+                <Text className={`font-montserrat-medium ${
+                  isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+                }`}>
+                  {category}
+                </Text>
+                <View className="w-1/2 h-2 rounded-full bg-gray-200">
+                  <View 
+                    className="h-2 rounded-full bg-green-500" 
+                    style={{ width: `${(index + 1) * 30}%` }}
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Financial Goals */}
+        <View>
+          <Text className={`text-lg font-montserrat-semibold mb-4 ${
+            isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+          }`}>
+            Financial Goals
+          </Text>
+          <View className="space-y-4">
+            {['Save ₹50,000', 'Pay off Credit Card', 'Invest ₹20,000'].map((goal, index) => (
+              <View 
+                key={index}
+                className={`p-4 rounded-xl ${
+                  isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
+                }`}
+              >
+                <Text className={`font-montserrat-medium mb-2 ${
+                  isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+                }`}>
+                  {goal}
+                </Text>
+                <View className="w-full h-2 rounded-full bg-gray-200">
+                  <View 
+                    className="h-2 rounded-full bg-blue-500" 
+                    style={{ width: `${(index + 1) * 30}%` }}
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
       </View>
     </ScrollView>
   );
-} 
+}

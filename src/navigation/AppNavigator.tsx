@@ -4,10 +4,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import SignupScreen from '../screens/Auth/SignupScreen';
-import HomeScreen from '../screens/HomeScreen';
 import { RootStackParamList } from '../types/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
+import MainTabsNavigator from './MainTabsNavigator';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -44,8 +44,8 @@ export default function AppNavigator() {
           // App Stack
           <>
             <Stack.Screen 
-              name="Home" 
-              component={HomeScreen}
+              name="MainTabs" 
+              component={MainTabsNavigator}
               options={{ gestureEnabled: false }}
             />
           </>
