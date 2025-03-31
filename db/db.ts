@@ -67,9 +67,51 @@ export const setupDatabase = async () => {
         createdAt TEXT,
         synced INTEGER DEFAULT 0
       );
+
+      CREATE TABLE IF NOT EXISTS categories (
+        id TEXT PRIMARY KEY NOT NULL,
+        userId TEXT,
+        name TEXT,
+        type TEXT,
+        icon TEXT,
+        color TEXT,
+        createdAt TEXT,
+        synced INTEGER DEFAULT 0
+      );
     `);
+
+    // Insert default categories and accounts if they don't exist
+    await insertDefaultData();
   } catch (error) {
     console.error('Error setting up database:', error);
+    throw error;
+  }
+};
+
+const insertDefaultData = async () => {
+  try {
+    // Insert default accounts
+    await db.runAsync(`
+      INSERT OR IGNORE INTO accounts (id, userId, name, balance, icon, createdAt, updatedAt)
+      VALUES 
+        ('cash_1', 'default_user', 'Cash', 0, 'cash', datetime('now'), datetime('now')),
+        ('bank_1', 'default_user', 'Bank Account', 0, 'bank', datetime('now'), datetime('now'));
+    `);
+
+    // Insert default categories
+    await db.runAsync(`
+      INSERT OR IGNORE INTO categories (id, userId, name, type, icon, color, createdAt)
+      VALUES 
+        ('food_1', 'default_user', 'Food & Dining', 'expense', 'food', '#FF6B6B', datetime('now')),
+        ('transport_1', 'default_user', 'Transportation', 'expense', 'car', '#4ECDC4', datetime('now')),
+        ('shopping_1', 'default_user', 'Shopping', 'expense', 'shopping', '#45B7D1', datetime('now')),
+        ('bills_1', 'default_user', 'Bills & Utilities', 'expense', 'bill', '#96CEB4', datetime('now')),
+        ('salary_1', 'default_user', 'Salary', 'income', 'money', '#2ECC71', datetime('now')),
+        ('freelance_1', 'default_user', 'Freelance', 'income', 'laptop', '#3498DB', datetime('now')),
+        ('transfer_1', 'default_user', 'Transfer', 'transfer', 'transfer', '#9B59B6', datetime('now'));
+    `);
+  } catch (error) {
+    console.error('Error inserting default data:', error);
     throw error;
   }
 };

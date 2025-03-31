@@ -22,7 +22,7 @@ export default function MainTabsNavigator() {
           headerShown: false,
           tabBarStyle: {
             backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-            borderColor: isDarkMode ? '#2C2C2C' : '#4B4B4Bs',
+            borderColor: isDarkMode ? '#2C2C2C' : '#4B4B4B',
             borderTopLeftRadius: 25,
             borderTopRightRadius: 25,
 

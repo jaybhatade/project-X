@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import SignupScreen from '../screens/Auth/SignupScreen';
+import AddTransactionScreen from '../screens/AddTransactionScreen';
+import ManageCategoriesScreen from '../screens/ManageCategoriesScreen';
 import { RootStackParamList } from '../types/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
@@ -47,6 +49,30 @@ export default function AppNavigator() {
               name="MainTabs" 
               component={MainTabsNavigator}
               options={{ gestureEnabled: false }}
+            />
+            <Stack.Screen 
+              name="AddTransaction" 
+              component={AddTransactionScreen}
+              options={{
+                headerShown: true,
+                title: 'Add Transaction',
+                headerStyle: {
+                  backgroundColor: '#21965B',
+                },
+                headerTintColor: '#FFFFFF',
+              }}
+            />
+            <Stack.Screen 
+              name="ManageCategories" 
+              component={ManageCategoriesScreen}
+              options={{
+                headerShown: true,
+                title: 'Manage Categories',
+                headerStyle: {
+                  backgroundColor: '#21965B',
+                },
+                headerTintColor: '#FFFFFF',
+              }}
             />
           </>
         )}
