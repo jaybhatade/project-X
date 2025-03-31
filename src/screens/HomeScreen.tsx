@@ -3,11 +3,14 @@ import { View, Text, TouchableOpacity, ScrollView, Alert, Animated } from 'react
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types/navigation';
+import { RootStackParamList, MainTabParamList } from '../types/navigation';
 import { auth, signOut } from '../services/firebase';
 import { Ionicons } from '@expo/vector-icons';
+import RecentTransactions from '../components/RecentTransactions';
 
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'HomeScreen'>;
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'> & {
+  navigate: (screen: keyof RootStackParamList) => void;
+};
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -121,48 +124,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Recent Transactions */}
-          <View className="mb-8">
-            <Text className={`text-lg font-montserrat-semibold mb-4 ${
-              isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-            }`}>
-              Recent Transactions
-            </Text>
-            <View className="space-y-4">
-              {[1, 2, 3].map((_, index) => (
-                <TouchableOpacity
-                  key={index}
-                  className={`p-4 rounded-xl flex-row items-center justify-between ${
-                    isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
-                  }`}
-                >
-                  <View className="flex-row items-center">
-                    <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${
-                      isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
-                    }`}>
-                      <Text className="text-white">🛒</Text>
-                    </View>
-                    <View>
-                      <Text className={`font-montserrat-medium ${
-                        isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-                      }`}>
-                        Shopping
-                      </Text>
-                      <Text className={`font-montserrat text-sm ${
-                        isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
-                      }`}>
-                        Today, 2:30 PM
-                      </Text>
-                    </View>
-                  </View>
-                  <Text className={`font-montserrat-semibold ${
-                    isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-                  }`}>
-                    ₹1,500
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+          <RecentTransactions />
 
           {/* Budget Overview */}
           <View className="mb-8">

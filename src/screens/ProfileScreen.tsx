@@ -12,13 +12,23 @@ type ProfileScreenNavigationProp = NativeStackNavigationProp<RootStackParamList,
 
 export default function ProfileScreen() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, toggleTheme } = useTheme();
 
   const menuItems = [
+    {
+      title: 'Manage Accounts',
+      icon: 'wallet-outline',
+      onPress: () => navigation.navigate('ManageAccounts'),
+    },
     {
       title: 'Manage Categories',
       icon: 'grid-outline',
       onPress: () => navigation.navigate('ManageCategories'),
+    },
+    {
+      title: isDarkMode ? 'Light Mode' : 'Dark Mode',
+      icon: isDarkMode ? 'sunny-outline' : 'moon-outline',
+      onPress: toggleTheme,
     },
     {
       title: 'Settings',

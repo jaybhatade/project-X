@@ -5,6 +5,8 @@ export type RootStackParamList = {
   MainTabs: undefined;
   AddTransaction: undefined;
   ManageCategories: undefined;
+  ManageAccounts: undefined;
+  AllTransactions: undefined;
 };
 
 export type MainTabParamList = {

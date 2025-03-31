@@ -6,6 +6,8 @@ import LoginScreen from '../screens/Auth/LoginScreen';
 import SignupScreen from '../screens/Auth/SignupScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import ManageCategoriesScreen from '../screens/ManageCategoriesScreen';
+import ManageAccountsScreen from '../screens/ManageAccountsScreen';
+import AllTransactionsScreen from '../screens/AllTransactionsScreen';
 import { RootStackParamList } from '../types/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
@@ -68,6 +70,30 @@ export default function AppNavigator() {
               options={{
                 headerShown: true,
                 title: 'Manage Categories',
+                headerStyle: {
+                  backgroundColor: '#21965B',
+                },
+                headerTintColor: '#FFFFFF',
+              }}
+            />
+            <Stack.Screen 
+              name="ManageAccounts" 
+              component={ManageAccountsScreen}
+              options={{
+                headerShown: true,
+                title: 'Manage Accounts',
+                headerStyle: {
+                  backgroundColor: '#21965B',
+                },
+                headerTintColor: '#FFFFFF',
+              }}
+            />
+            <Stack.Screen 
+              name="AllTransactions" 
+              component={AllTransactionsScreen}
+              options={{
+                headerShown: true,
+                title: 'All Transactions',
                 headerStyle: {
                   backgroundColor: '#21965B',
                 },
