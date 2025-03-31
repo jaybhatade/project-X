@@ -288,4 +288,16 @@ export const getAllBudgets = async (): Promise<Budget[]> => getAllDataFromTable<
 export const getAllSubscriptions = async (): Promise<Subscription[]> => getAllDataFromTable<Subscription>('subscriptions');
 export const getAllCategories = async (): Promise<Category[]> => getAllDataFromTable<Category>('categories');
 
+export const deleteTransaction = async (transactionId: string) => {
+  try {
+    await db.runAsync(
+      `DELETE FROM transactions WHERE id = ?`,
+      [transactionId]
+    );
+  } catch (error) {
+    console.error('Error deleting transaction:', error);
+    throw error;
+  }
+};
+
 export default db;

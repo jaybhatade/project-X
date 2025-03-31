@@ -471,4 +471,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddTransactionScreen;
+export default AddTransactionScreen; 

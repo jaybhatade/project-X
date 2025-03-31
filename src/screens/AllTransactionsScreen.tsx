@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { getAllTransactions, getAllAccounts, getAllCategories } from '../../db/db';
+import { getAllTransactions, getAllAccounts, getAllCategories, deleteTransaction, updateAccount } from '../../db/db';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Transaction {
@@ -13,12 +13,19 @@ interface Transaction {
   accountId: string;
   date: string;
   notes?: string;
+  transferFrom?: string;
+  transferTo?: string;
 }
 
 interface Account {
   id: string;
+  userId: string;
   name: string;
+  balance: number;
   icon: string;
+  createdAt: string;
+  updatedAt: string;
+  synced?: number;
 }
 
 interface Category {
@@ -35,8 +42,10 @@ export default function AllTransactionsScreen() {
   const [accounts, setAccounts] = useState<{ [key: string]: Account }>({});
   const [categories, setCategories] = useState<{ [key: string]: Category }>({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'expense' | 'income'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'expense' | 'income' | 'transfer'>('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -75,9 +84,7 @@ export default function AllTransactionsScreen() {
     return date.toLocaleDateString([], { 
       year: 'numeric',
       month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
     });
   };
 
@@ -92,12 +99,241 @@ export default function AllTransactionsScreen() {
     return matchesSearch && matchesFilter;
   });
 
+  const handleDeleteTransaction = async (transaction: Transaction) => {
+    try {
+      // Update account balances based on transaction type
+      if (transaction.type === 'transfer') {
+        // For transfers, reverse the balance changes
+        const fromAccount = accounts[transaction.accountId];
+        await updateAccount({
+          ...fromAccount,
+          balance: fromAccount.balance + transaction.amount,
+          updatedAt: new Date().toISOString()
+        });
+        if (transaction.transferTo) {
+          const toAccount = accounts[transaction.transferTo];
+          await updateAccount({
+            ...toAccount,
+            balance: toAccount.balance - transaction.amount,
+            updatedAt: new Date().toISOString()
+          });
+        }
+      } else {
+        // For expenses and income, reverse the balance change
+        const amountValue = transaction.type === 'expense' ? transaction.amount : -transaction.amount;
+        const account = accounts[transaction.accountId];
+        await updateAccount({
+          ...account,
+          balance: account.balance + amountValue,
+          updatedAt: new Date().toISOString()
+        });
+      }
+
+      // Delete the transaction
+      await deleteTransaction(transaction.id);
+
+      // Reload data
+      loadData();
+      setShowDetailsModal(false);
+      setSelectedTransaction(null);
+      Alert.alert('Success', 'Transaction deleted successfully');
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      Alert.alert('Error', 'Failed to delete transaction');
+    }
+  };
+
+  const TransactionDetailsModal = ({ 
+    visible, 
+    onClose, 
+    transaction 
+  }: { 
+    visible: boolean; 
+    onClose: () => void; 
+    transaction: Transaction | null;
+  }) => {
+    if (!transaction) return null;
+
+    const account = accounts[transaction.accountId];
+    const category = categories[transaction.categoryId];
+    const transferToAccount = transaction.transferTo ? accounts[transaction.transferTo] : null;
+
+    const getAmountColor = () => {
+      if (transaction.type === 'transfer') return '#21965B';
+      return transaction.type === 'expense' ? '#FF3B30' : '#21965B';
+    };
+
+    const getTransactionIcon = () => {
+      if (transaction.type === 'transfer') return '↔️';
+      return category?.icon || '💰';
+    };
+
+    return (
+      <Modal
+        visible={visible}
+        transparent
+        animationType="slide"
+        onRequestClose={onClose}
+      >
+        <View className={`flex-1 justify-end ${isDarkMode ? 'bg-black/50' : 'bg-black/30'}`}>
+          <View className={`rounded-t-3xl ${
+            isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'
+          }`}>
+            <View className="flex-row justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+              <Text className={`text-xl font-montserrat-bold ${
+                isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+              }`}>
+                Transaction Details
+              </Text>
+              <View className="flex-row">
+                <TouchableOpacity 
+                  onPress={() => {
+                    Alert.alert(
+                      'Delete Transaction',
+                      'Are you sure you want to delete this transaction?',
+                      [
+                        {
+                          text: 'Cancel',
+                          style: 'cancel'
+                        },
+                        {
+                          text: 'Delete',
+                          style: 'destructive',
+                          onPress: () => handleDeleteTransaction(transaction)
+                        }
+                      ]
+                    );
+                  }}
+                  className="mr-4"
+                >
+                  <Ionicons 
+                    name="trash-outline" 
+                    size={24} 
+                    color="#FF3B30" 
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onClose}>
+                  <Ionicons 
+                    name="close" 
+                    size={24} 
+                    color={isDarkMode ? '#FFFFFF' : '#000000'} 
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View className="p-6">
+              <View className="items-center mb-8">
+                <View 
+                  className={`w-20 h-20 rounded-full items-center justify-center mb-4`}
+                  style={{ backgroundColor: transaction.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}
+                >
+                  <Text className="text-3xl">{getTransactionIcon()}</Text>
+                </View>
+                <Text className={`text-3xl font-montserrat-bold mb-2`} style={{ color: getAmountColor() }}>
+                  {transaction.type === 'transfer' ? '→' : (transaction.type === 'expense' ? '-' : '+')}₹{transaction.amount.toLocaleString()}
+                </Text>
+                <Text className={`font-montserrat-medium text-lg ${
+                  isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+                }`}>
+                  {transaction.type === 'transfer' 
+                    ? `Transfer to ${transferToAccount?.name || 'Unknown Account'}`
+                    : category?.name || 'Unknown Category'}
+                </Text>
+              </View>
+
+              <View className="space-y-6">
+                <View className="flex-row justify-between items-center">
+                  <Text className={`font-montserrat-medium ${
+                    isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+                  }`}>
+                    Date
+                  </Text>
+                  <Text className={`font-montserrat ${
+                    isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+                  }`}>
+                    {formatDate(transaction.date)}
+                  </Text>
+                </View>
+
+                <View>
+                  <Text className={`font-montserrat-medium mb-2 ${
+                    isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+                  }`}>
+                    {transaction.type === 'transfer' ? 'From Account' : 'Account'}
+                  </Text>
+                  <View className={`p-3 rounded-xl ${
+                    isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
+                  }`}>
+                    <Text className={`font-montserrat ${
+                      isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+                    }`}>
+                      {account?.name || 'Unknown Account'}
+                    </Text>
+                  </View>
+                </View>
+
+                {transaction.type === 'transfer' && (
+                  <View>
+                    <Text className={`font-montserrat-medium mb-2 ${
+                      isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+                    }`}>
+                      To Account
+                    </Text>
+                    <View className={`p-3 rounded-xl ${
+                      isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
+                    }`}>
+                      <Text className={`font-montserrat ${
+                        isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+                      }`}>
+                        {transferToAccount?.name || 'Unknown Account'}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {transaction.notes && (
+                  <View>
+                    <Text className={`font-montserrat-medium mb-2 ${
+                      isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+                    }`}>
+                      Notes
+                    </Text>
+                    <View className={`p-3 rounded-xl ${
+                      isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
+                    }`}>
+                      <Text className={`font-montserrat ${
+                        isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+                      }`}>
+                        {transaction.notes}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   const renderTransaction = ({ item }: { item: Transaction }) => {
     const account = accounts[item.accountId];
     const category = categories[item.categoryId];
+    const transferToAccount = item.transferTo ? accounts[item.transferTo] : null;
+
+    const getAmountColor = () => {
+      if (item.type === 'transfer') return '#21965B';
+      return item.type === 'expense' ? '#FF3B30' : '#21965B';
+    };
 
     return (
       <TouchableOpacity
+        onPress={() => {
+          setSelectedTransaction(item);
+          setShowDetailsModal(true);
+        }}
         className={`p-4 rounded-xl flex-row items-center justify-between ${
           isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
         }`}
@@ -105,15 +341,19 @@ export default function AllTransactionsScreen() {
         <View className="flex-row items-center">
           <View 
             className={`w-10 h-10 rounded-full items-center justify-center mr-3`}
-            style={{ backgroundColor: category?.color || '#21965B' }}
+            style={{ backgroundColor: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}
           >
-            <Text className="text-white">{category?.icon || '💰'}</Text>
+            <Text className="text-white">
+              {item.type === 'transfer' ? '↔️' : (category?.icon || '💰')}
+            </Text>
           </View>
           <View>
             <Text className={`font-montserrat-medium ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
             }`}>
-              {category?.name || 'Unknown Category'}
+              {item.type === 'transfer' 
+                ? `Transfer to ${transferToAccount?.name || 'Unknown Account'}`
+                : category?.name || 'Unknown Category'}
             </Text>
             <Text className={`font-montserrat text-sm ${
               isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
@@ -122,10 +362,8 @@ export default function AllTransactionsScreen() {
             </Text>
           </View>
         </View>
-        <Text className={`font-montserrat-semibold ${
-          isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-        }`}>
-          ₹{item.amount.toLocaleString()}
+        <Text className={`font-montserrat-semibold`} style={{ color: getAmountColor() }}>
+          {item.type === 'transfer' ? '→' : (item.type === 'expense' ? '-' : '+')}₹{item.amount.toLocaleString()}
         </Text>
       </TouchableOpacity>
     );
@@ -210,6 +448,24 @@ export default function AllTransactionsScreen() {
               Income
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            className={`p-4 rounded-xl ${
+              filterType === 'transfer'
+                ? (isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary')
+                : (isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface')
+            }`}
+            onPress={() => {
+              setFilterType('transfer');
+              setShowFilterModal(false);
+            }}
+          >
+            <Text className={`font-montserrat-medium ${
+              filterType === 'transfer' ? 'text-white' : (isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary')
+            }`}>
+              Transfers
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>
@@ -268,6 +524,14 @@ export default function AllTransactionsScreen() {
         />
       </View>
       <FilterModal />
+      <TransactionDetailsModal
+        visible={showDetailsModal}
+        onClose={() => {
+          setShowDetailsModal(false);
+          setSelectedTransaction(null);
+        }}
+        transaction={selectedTransaction}
+      />
     </View>
   );
 } 

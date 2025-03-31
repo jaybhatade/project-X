@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import { getAllTransactions, getAllAccounts, getAllCategories } from '../../db/db';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,6 +15,8 @@ interface Transaction {
   accountId: string;
   date: string;
   notes?: string;
+  transferFrom?: string;
+  transferTo?: string;
 }
 
 interface Account {
@@ -40,10 +42,6 @@ export default function RecentTransactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<{ [key: string]: Account }>({});
   const [categories, setCategories] = useState<{ [key: string]: Category }>({});
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const loadData = async () => {
     try {
@@ -77,6 +75,18 @@ export default function RecentTransactions() {
     }
   };
 
+  // Initial load
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Refresh when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, [])
+  );
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const today = new Date();
@@ -84,17 +94,37 @@ export default function RecentTransactions() {
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return `Today, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return 'Today';
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return `Yesterday, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return 'Yesterday';
     } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
     }
   };
 
   const renderTransaction = ({ item }: { item: Transaction }) => {
     const account = accounts[item.accountId];
     const category = categories[item.categoryId];
+    const transferToAccount = item.transferTo ? accounts[item.transferTo] : null;
+
+    const getAmountColor = () => {
+      if (item.type === 'transfer') return '#21965B'; // Green for transfers
+      return item.type === 'expense' ? '#FF3B30' : '#21965B'; // Red for expenses, Green for income
+    };
+
+    const getTransactionTitle = () => {
+      if (item.type === 'transfer') {
+        return `Transfer to ${transferToAccount?.name || 'Unknown Account'}`;
+      }
+      return category?.name || 'Unknown Category';
+    };
+
+    const getTransactionSubtitle = () => {
+      if (item.type === 'transfer') {
+        return `From ${account?.name || 'Unknown Account'}`;
+      }
+      return `${account?.name || 'Unknown Account'} • ${formatDate(item.date)}`;
+    };
 
     return (
       <TouchableOpacity
@@ -106,27 +136,27 @@ export default function RecentTransactions() {
         <View className="flex-row items-center">
           <View 
             className={`w-10 h-10 rounded-full items-center justify-center mr-3`}
-            style={{ backgroundColor: category?.color || '#21965B' }}
+            style={{ backgroundColor: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}
           >
-            <Text className="text-white">{category?.icon || '💰'}</Text>
+            <Text className="text-white">
+              {item.type === 'transfer' ? '↔️' : (category?.icon || '💰')}
+            </Text>
           </View>
           <View>
             <Text className={`font-montserrat-medium ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
             }`}>
-              {category?.name || 'Unknown Category'}
+              {getTransactionTitle()}
             </Text>
             <Text className={`font-montserrat text-sm ${
               isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
             }`}>
-              {account?.name || 'Unknown Account'} • {formatDate(item.date)}
+              {getTransactionSubtitle()}
             </Text>
           </View>
         </View>
-        <Text className={`font-montserrat-semibold ${
-          isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-        }`}>
-          ₹{item.amount.toLocaleString()}
+        <Text className={`font-montserrat-semibold`} style={{ color: getAmountColor() }}>
+          {item.type === 'transfer' ? '→' : (item.type === 'expense' ? '-' : '+')}₹{item.amount.toLocaleString()}
         </Text>
       </TouchableOpacity>
     );
