@@ -25,6 +25,40 @@ interface Account {
   updatedAt: string;
 }
 
+interface Budget {
+  id: string;
+  userId: string;
+  categoryId: string;
+  budgetLimit: number;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  synced: number;
+}
+
+interface Subscription {
+  id: string;
+  userId: string;
+  name: string;
+  amount: number;
+  categoryId: string;
+  status: string;
+  renewalDate: string;
+  createdAt: string;
+  synced: number;
+}
+
+interface Category {
+  id: string;
+  userId: string;
+  name: string;
+  type: string;
+  icon: string;
+  color: string;
+  createdAt: string;
+  synced: number;
+}
+
 const db = SQLite.openDatabaseSync('bloom_budget.db');
 
 // Add a table to track initialization status
@@ -296,6 +330,130 @@ export const deleteTransaction = async (transactionId: string) => {
     );
   } catch (error) {
     console.error('Error deleting transaction:', error);
+    throw error;
+  }
+};
+
+// Budget-specific functions
+export const addBudget = async (budget: Budget) => {
+  try {
+    await db.runAsync(
+      `INSERT INTO budgets (id, userId, categoryId, budgetLimit, startDate, endDate, createdAt, synced)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        budget.id,
+        budget.userId,
+        budget.categoryId,
+        budget.budgetLimit,
+        budget.startDate,
+        budget.endDate,
+        budget.createdAt,
+        0
+      ]
+    );
+  } catch (error) {
+    console.error('Error adding budget:', error);
+    throw error;
+  }
+};
+
+export const updateBudget = async (budget: Budget) => {
+  try {
+    await db.runAsync(
+      `UPDATE budgets 
+       SET categoryId = ?, budgetLimit = ?, startDate = ?, endDate = ?, synced = 0
+       WHERE id = ? AND userId = ?`,
+      [
+        budget.categoryId,
+        budget.budgetLimit,
+        budget.startDate,
+        budget.endDate,
+        budget.id,
+        budget.userId
+      ]
+    );
+  } catch (error) {
+    console.error('Error updating budget:', error);
+    throw error;
+  }
+};
+
+export const deleteBudget = async (budgetId: string, userId: string) => {
+  try {
+    await db.runAsync(
+      `DELETE FROM budgets WHERE id = ? AND userId = ?`,
+      [budgetId, userId]
+    );
+  } catch (error) {
+    console.error('Error deleting budget:', error);
+    throw error;
+  }
+};
+
+export const getBudgetsByUserId = async (userId: string) => {
+  try {
+    const budgets = await db.getAllAsync<Budget>(
+      `SELECT * FROM budgets WHERE userId = ?`,
+      [userId]
+    );
+    return budgets;
+  } catch (error) {
+    console.error('Error getting budgets:', error);
+    throw error;
+  }
+};
+
+export const getBudgetById = async (budgetId: string) => {
+  try {
+    const budget = await db.getFirstAsync<Budget>(
+      `SELECT * FROM budgets WHERE id = ?`,
+      [budgetId]
+    );
+    return budget;
+  } catch (error) {
+    console.error('Error getting budget:', error);
+    throw error;
+  }
+};
+
+export const getBudgetSpending = async (categoryId: string, startDate: string, endDate: string) => {
+  try {
+    const result = await db.getFirstAsync<{ totalSpent: number }>(
+      `SELECT SUM(amount) as totalSpent FROM transactions 
+       WHERE categoryId = ? AND date BETWEEN ? AND ? AND type = 'expense'`,
+      [categoryId, startDate, endDate]
+    );
+    return result?.totalSpent || 0;
+  } catch (error) {
+    console.error('Error calculating budget spending:', error);
+    throw error;
+  }
+};
+
+export const getBudgetsWithSpending = async (userId: string) => {
+  try {
+    const budgets = await getBudgetsByUserId(userId);
+    
+    const budgetsWithSpending = await Promise.all(
+      budgets.map(async (budget) => {
+        const spent = await getBudgetSpending(
+          budget.categoryId, 
+          budget.startDate, 
+          budget.endDate
+        );
+        
+        return {
+          ...budget,
+          spent,
+          remaining: budget.budgetLimit - spent,
+          percentUsed: (spent / budget.budgetLimit) * 100
+        };
+      })
+    );
+    
+    return budgetsWithSpending;
+  } catch (error) {
+    console.error('Error getting budgets with spending:', error);
     throw error;
   }
 };
