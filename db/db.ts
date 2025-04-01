@@ -131,6 +131,9 @@ export const setupDatabase = async () => {
       );
     `);
 
+    // Ensure all database schema migrations are applied
+    await migrateDatabase();
+
     // Check if initialization has already been done
     const result = await db.getFirstAsync<{ initialized: number }>(
       `SELECT initialized FROM ${INIT_TABLE_NAME} LIMIT 1;`
@@ -147,6 +150,31 @@ export const setupDatabase = async () => {
     }
   } catch (error) {
     console.error('Error setting up database:', error);
+    throw error;
+  }
+};
+
+// Function to handle database migrations
+const migrateDatabase = async () => {
+  try {
+    // Check if budgetLimit column exists in budgets table
+    const tableInfo = await db.getAllAsync(
+      "PRAGMA table_info(budgets);"
+    );
+    
+    const budgetLimitExists = tableInfo.some(
+      (column: any) => column.name === 'budgetLimit'
+    );
+    
+    // Add budgetLimit column if it doesn't exist
+    if (!budgetLimitExists) {
+      console.log('Adding budgetLimit column to budgets table');
+      await db.execAsync(
+        "ALTER TABLE budgets ADD COLUMN budgetLimit REAL DEFAULT 0;"
+      );
+    }
+  } catch (error) {
+    console.error('Error migrating database:', error);
     throw error;
   }
 };

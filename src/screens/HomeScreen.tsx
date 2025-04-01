@@ -7,6 +7,7 @@ import { RootStackParamList, MainTabParamList } from '../types/navigation';
 import { auth, signOut } from '../services/firebase';
 import { Ionicons } from '@expo/vector-icons';
 import RecentTransactions from '../components/RecentTransactions';
+import BudgetListCards from '../components/BudgetListCards';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'> & {
   navigate: (screen: keyof RootStackParamList) => void;
@@ -35,9 +36,9 @@ export default function HomeScreen() {
         )}
         scrollEventThrottle={16}
       >
-        <View className="px-6 pt-12 pb-6">
+        <View className=" pt-12 pb-6">
           {/* Header */}
-          <View className="flex-row justify-between items-center mb-8">
+          <View className="flex-row justify-between items-center px-6 mb-8">
             <Text className={`text-2xl font-montserrat-bold ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
             }`}>
@@ -58,7 +59,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Balance Card */}
-          <View className={`p-6 rounded-xl mb-8 ${
+          <View className={`p-6 rounded-xl mx-6 mb-8 ${
             isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
           }`}>
             <Text className="text-white font-montserrat-medium mb-2">
@@ -88,68 +89,18 @@ export default function HomeScreen() {
           </View>
 
 
-          {/* Quick Actions */}
-          <View className="mb-8">
-            <Text className={`text-lg font-montserrat-semibold mb-4 ${
-              isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-            }`}>
-              Quick Actions
-            </Text>
-            <View className="flex-row justify-between">
-              <TouchableOpacity
-                className={`p-4 rounded-xl items-center w-[48%] ${
-                  isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
-                }`}
-              >
-                <Text className="text-2xl mb-2">➕</Text>
-                <Text className={`font-montserrat-medium ${
-                  isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-                }`}>
-                  Add Income
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className={`p-4 rounded-xl items-center w-[48%] ${
-                  isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
-                }`}
-              >
-                <Text className="text-2xl mb-2">➖</Text>
-                <Text className={`font-montserrat-medium ${
-                  isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-                }`}>
-                  Add Expense
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
 
           {/* Recent Transactions */}
           <RecentTransactions />
 
           {/* Budget Overview */}
-          <View className="mb-8">
-            <Text className={`text-lg font-montserrat-semibold mb-4 ${
+          <View className=" mb-8">
+            <Text className={`text-lg px-6 font-montserrat-semibold mb-4 ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
             }`}>
               Budget Overview
             </Text>
-            <View className="space-y-3">
-              {['Groceries', 'Entertainment', 'Transport'].map((category, index) => (
-                <View key={index} className="flex-row justify-between items-center">
-                  <Text className={`font-montserrat-medium ${
-                    isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-                  }`}>
-                    {category}
-                  </Text>
-                  <View className="w-1/2 h-2 rounded-full bg-gray-200">
-                    <View 
-                      className="h-2 rounded-full bg-green-500" 
-                      style={{ width: `${(index + 1) * 30}%` }}
-                    />
-                  </View>
-                </View>
-              ))}
-            </View>
+            <BudgetListCards />
           </View>
 
           {/* Financial Goals */}

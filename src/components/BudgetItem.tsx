@@ -52,7 +52,8 @@ const BudgetItem: React.FC<BudgetItemProps> = ({
               { backgroundColor: categoryColor }
             ]}
           >
-            <Ionicons name={categoryIcon as any} size={18} color="#FFFFFF" />
+            <Text style={{ color: '#FFFFFF', fontSize: 18 }}>{categoryIcon}</Text> 
+            {/* categoryIcon is a text string, not an icon */}
           </View>
           <Text
             style={[
@@ -79,6 +80,7 @@ const BudgetItem: React.FC<BudgetItemProps> = ({
         percentUsed={percentUsed} 
         spent={spent} 
         budgetLimit={budgetLimit} 
+        categoryColor={categoryColor}
       />
       
       <Text

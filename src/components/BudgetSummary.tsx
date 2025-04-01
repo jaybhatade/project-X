@@ -52,7 +52,7 @@ const BudgetSummary: React.FC<BudgetSummaryProps> = ({
               { color: '#21965B' }
             ]}
           >
-            ${totalBudget.toFixed(2)}
+            ₹{totalBudget}
           </Text>
           <Text 
             style={[
@@ -68,10 +68,10 @@ const BudgetSummary: React.FC<BudgetSummaryProps> = ({
           <Text 
             style={[
               styles.statValue,
-              { color: getProgressColor() }
+              { color: totalSpent > 0 ? '#FF6B6B' : getProgressColor() }
             ]}
           >
-            ${totalSpent.toFixed(2)}
+            ₹{totalSpent}
           </Text>
           <Text 
             style={[
@@ -90,7 +90,7 @@ const BudgetSummary: React.FC<BudgetSummaryProps> = ({
               { color: totalRemaining >= 0 ? '#21965B' : '#FF6B6B' }
             ]}
           >
-            ${totalRemaining.toFixed(2)}
+            ₹{Math.abs(totalRemaining)}
           </Text>
           <Text 
             style={[
@@ -98,7 +98,7 @@ const BudgetSummary: React.FC<BudgetSummaryProps> = ({
               { color: isDarkMode ? '#B0B0B0' : '#707070' }
             ]}
           >
-            Remaining
+            {totalRemaining >= 0 ? 'Remaining' : 'Exceeded'}
           </Text>
         </View>
       </View>
@@ -127,7 +127,7 @@ const BudgetSummary: React.FC<BudgetSummaryProps> = ({
             { color: isDarkMode ? '#FFFFFF' : '#000000' }
           ]}
         >
-          {percentUsed.toFixed(1)}% used
+          {percentUsed}% used
         </Text>
       </View>
       

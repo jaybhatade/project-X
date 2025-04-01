@@ -6,20 +6,36 @@ interface BudgetProgressBarProps {
   percentUsed: number;
   spent: number;
   budgetLimit: number;
+  categoryColor?: string; // Add optional category color prop
 }
 
 const BudgetProgressBar: React.FC<BudgetProgressBarProps> = ({ 
   percentUsed, 
   spent, 
-  budgetLimit 
+  budgetLimit,
+  categoryColor = '#21965B' // Default color if not provided
 }) => {
   const { isDarkMode } = useTheme();
   
   // Cap the percent at 100% for UI display
   const cappedPercent = percentUsed > 100 ? 100 : percentUsed;
   
+  // Calculate amount left or exceeded
+  const amountDifference = budgetLimit - spent;
+  const isExceeded = amountDifference < 0;
+  
   // Determine color based on usage percentage
   const getProgressColor = () => {
+    // Use category color if provided, otherwise use default color scheme
+    if (categoryColor) return categoryColor;
+    
+    if (percentUsed < 50) return '#21965B'; // Green - good
+    if (percentUsed < 80) return '#FFB347'; // Orange - warning
+    return '#FF6B6B'; // Red - critical
+  };
+
+  // Determine text color for amount left/exceeded
+  const getAmountColor = () => {
     if (percentUsed < 50) return '#21965B'; // Green - good
     if (percentUsed < 80) return '#FFB347'; // Orange - warning
     return '#FF6B6B'; // Red - critical
@@ -46,13 +62,28 @@ const BudgetProgressBar: React.FC<BudgetProgressBarProps> = ({
           styles.text,
           { color: isDarkMode ? '#FFFFFF' : '#000000' }
         ]}>
-          ${spent.toFixed(2)} of ${budgetLimit.toFixed(2)}
+          ₹ {spent } of ₹ {budgetLimit }
         </Text>
         <Text style={[
           styles.text,
-          { color: isDarkMode ? '#FFFFFF' : '#000000' }
+          { 
+            color: isDarkMode ? '#FFFFFF' : '#000000' 
+          }
         ]}>
-          {percentUsed.toFixed(1)}%
+
+          {' '}
+          <Text>
+            {isExceeded 
+              ? `exceeded: ` 
+              : `left: `}
+            <Text style={[
+              styles.amountText,
+              { color: getAmountColor() }
+            ]}>
+              ₹{Math.abs(amountDifference)}
+            </Text>
+            
+          </Text>
         </Text>
       </View>
     </View>
@@ -64,7 +95,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   progressBackground: {
-    height: 12,
+    height: 8,
     borderRadius: 6,
     overflow: 'hidden',
   },
@@ -74,10 +105,14 @@ const styles = StyleSheet.create({
   textContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 4,
+    marginTop: 6,
   },
   text: {
     fontSize: 12,
+  },
+  amountText: {
+    fontSize: 12,
+    fontWeight: 'bold',
   }
 });
 

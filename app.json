@@ -29,7 +29,8 @@
         "foregroundImage": "./assets/Logo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.jay7.bloombudget"
+      "package": "com.jay7.bloombudget",
+      "newArchEnabled": true
     },
     "extra": {
       "eas": {

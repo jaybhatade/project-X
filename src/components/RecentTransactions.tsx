@@ -47,10 +47,10 @@ export default function RecentTransactions() {
     try {
       // Get all transactions
       const transactionsData = await getAllTransactions();
-      // Sort by date in descending order and take only the first 5
+      // Sort by date in descending order and take only the first 4
       const recentTransactions = transactionsData
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 5);
+        .slice(0, 3);
       setTransactions(recentTransactions);
 
       // Get all accounts and categories
@@ -163,7 +163,7 @@ export default function RecentTransactions() {
   };
 
   return (
-    <View className="mb-8">
+    <View className="mb-8 px-6">
       <View className="flex-row justify-between items-center mb-4">
         <Text className={`text-lg font-montserrat-semibold ${
           isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
