@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import BudgetProgressBar from './BudgetProgressBar';
-import * as db from '../../db/db';
-import NoData from './NoData';
-import { useAuth } from '../contexts/AuthContext';
+import * as db from '../../../db/db';
+import NoData from '../NoData';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Budget and Category interfaces to match db types
 interface Budget {
@@ -13,8 +13,8 @@ interface Budget {
   userId: string;
   categoryId: string;
   budgetLimit: number;
-  startDate: string;
-  endDate: string;
+  month: number;
+  year: number;
   createdAt: string;
   spent: number;
   percentUsed: number;
@@ -56,7 +56,17 @@ const BudgetListCards: React.FC = () => {
       
       // Then load budgets with spending data
       const budgetsWithSpending = await db.getBudgetsWithSpending(userId);
-      setBudgets(budgetsWithSpending);
+      
+      // Filter for current month only
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+      
+      const currentMonthBudgets = budgetsWithSpending.filter(budget => 
+        budget.month === currentMonth && budget.year === currentYear
+      );
+      
+      setBudgets(currentMonthBudgets);
     } catch (error) {
       console.error('Error loading budget data:', error);
     } finally {
@@ -69,16 +79,19 @@ const BudgetListCards: React.FC = () => {
     return categories.find(category => category.id === categoryId);
   };
 
-  // Format dates for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // Get month name from month number
+  const getMonthName = (month: number) => {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month];
   };
 
   // Navigate to budget screen
   const navigateToBudgetScreen = () => {
-    // @ts-ignore - We know this screen exists
-    navigation.navigate('BudgetTab');
+    // Navigate to the Budget tab in the MainTabs navigator
+    navigation.navigate('MainTabs', { screen: 'Budget' });
   };
 
   // Render individual budget card
@@ -88,7 +101,8 @@ const BudgetListCards: React.FC = () => {
     if (!category) return null;
     
     return (
-      <View
+      <TouchableOpacity
+        onPress={navigateToBudgetScreen}
         style={[
           styles.container,
           { 
@@ -118,13 +132,13 @@ const BudgetListCards: React.FC = () => {
             </Text>
           </View>
           <Text
-          style={[
-            styles.dateRange,
-            { color: isDarkMode ? '#B0B0B0' : '#707070' }
-          ]}
-        >
-          {formatDate(item.startDate)} - {formatDate(item.endDate)}
-        </Text>
+            style={[
+              styles.dateRange,
+              { color: isDarkMode ? '#B0B0B0' : '#707070' }
+            ]}
+          >
+            {getMonthName(item.month)} {item.year}
+          </Text>
         </View>
         
         <BudgetProgressBar 
@@ -133,7 +147,7 @@ const BudgetListCards: React.FC = () => {
           budgetLimit={item.budgetLimit} 
           categoryColor={category.color}
         />
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -155,41 +169,15 @@ const BudgetListCards: React.FC = () => {
     return <NoData message="No budgets found" />;
   }
 
-  // Only show up to 3 budgets on the home screen
-  const displayBudgets = budgets.slice(0, 3);
-  const hasMoreBudgets = budgets.length > 3;
-
   return (
     <View style={styles.listContainer}>
       <FlatList
-        data={displayBudgets}
+        data={budgets}
         renderItem={renderBudgetCard}
         keyExtractor={(item) => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
-        ListFooterComponent={
-          hasMoreBudgets ? (
-            <TouchableOpacity 
-              style={[
-                styles.seeAllButton,
-                { 
-                  backgroundColor: isDarkMode ? '#333333' : '#F0F0F0',
-                  width: screenWidth * 0.8
-                }
-              ]} 
-              onPress={navigateToBudgetScreen}
-            >
-              <Text style={{ 
-                color: isDarkMode ? '#FFFFFF' : '#000000',
-                fontWeight: '500',
-                textAlign: 'center'
-              }}>
-                See All Budgets
-              </Text>
-            </TouchableOpacity>
-          ) : null
-        }
       />
     </View>
   );
@@ -241,12 +229,6 @@ const styles = StyleSheet.create({
   dateRange: {
     fontSize: 12,
     marginTop: 4,
-  },
-  seeAllButton: {
-    padding: 12,
-    borderRadius: 12,
-    marginTop: 4,
-    marginBottom: 8,
   }
 });
 

@@ -7,7 +7,7 @@ import { RootStackParamList, MainTabParamList } from '../types/navigation';
 import { auth, signOut } from '../services/firebase';
 import { Ionicons } from '@expo/vector-icons';
 import RecentTransactions from '../components/RecentTransactions';
-import BudgetListCards from '../components/BudgetListCards';
+import BudgetListCards from '../components/BudgetComponents/BudgetListCards';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'> & {
   navigate: (screen: keyof RootStackParamList) => void;

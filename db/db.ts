@@ -30,8 +30,8 @@ interface Budget {
   userId: string;
   categoryId: string;
   budgetLimit: number;
-  startDate: string;
-  endDate: string;
+  month: number; // 0-11 for January-December
+  year: number;
   createdAt: string;
   synced: number;
 }
@@ -55,6 +55,20 @@ interface Category {
   type: string;
   icon: string;
   color: string;
+  createdAt: string;
+  synced: number;
+}
+
+interface Goal {
+  id: string;
+  userId: string;
+  title: string;
+  emoji: string;
+  targetAmount: number;
+  targetDate: string;
+  accountId: string;
+  includeBalance: boolean;
+  monthlyContribution: number;
   createdAt: string;
   synced: number;
 }
@@ -101,8 +115,8 @@ export const setupDatabase = async (userId: string) => {
         userId TEXT,
         categoryId TEXT,
         budgetLimit REAL,
-        startDate TEXT,
-        endDate TEXT,
+        month INTEGER,
+        year INTEGER,
         createdAt TEXT,
         synced INTEGER DEFAULT 0
       );
@@ -128,6 +142,21 @@ export const setupDatabase = async (userId: string) => {
         color TEXT,
         createdAt TEXT,
         synced INTEGER DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS goals (
+        id TEXT PRIMARY KEY NOT NULL,
+        userId TEXT,
+        title TEXT,
+        emoji TEXT,
+        targetAmount REAL,
+        targetDate TEXT,
+        accountId TEXT,
+        includeBalance INTEGER,
+        monthlyContribution REAL,
+        createdAt TEXT,
+        synced INTEGER DEFAULT 0,
+        FOREIGN KEY (accountId) REFERENCES accounts (id) ON DELETE CASCADE
       );
     `);
 
@@ -186,7 +215,7 @@ const insertDefaultData = async (userId: string) => {
       INSERT OR IGNORE INTO accounts (id, userId, name, balance, icon, createdAt, updatedAt)
       VALUES 
         ('cash_1', ?, 'Cash', 0, '💵', datetime('now'), datetime('now')),
-        ('bank_1', ?, 'Bank Account', '🏛️', 'bank', datetime('now'), datetime('now'));
+        ('bank_1', ?, 'Bank Account', 0, '🏛️', datetime('now'), datetime('now'));
     `, [userId, userId]);
 
     // Insert default categories
@@ -349,6 +378,7 @@ export const getAllAccounts = async (): Promise<Account[]> => getAllDataFromTabl
 export const getAllBudgets = async (): Promise<Budget[]> => getAllDataFromTable<Budget>('budgets');
 export const getAllSubscriptions = async (): Promise<Subscription[]> => getAllDataFromTable<Subscription>('subscriptions');
 export const getAllCategories = async (): Promise<Category[]> => getAllDataFromTable<Category>('categories');
+export const getAllGoals = async (): Promise<Goal[]> => getAllDataFromTable<Goal>('goals');
 
 export const deleteTransaction = async (transactionId: string) => {
   try {
@@ -390,15 +420,15 @@ export const deleteCategory = async (categoryId: string, userId: string) => {
 export const addBudget = async (budget: Budget) => {
   try {
     await db.runAsync(
-      `INSERT INTO budgets (id, userId, categoryId, budgetLimit, startDate, endDate, createdAt, synced)
+      `INSERT INTO budgets (id, userId, categoryId, budgetLimit, month, year, createdAt, synced)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         budget.id,
         budget.userId,
         budget.categoryId,
         budget.budgetLimit,
-        budget.startDate,
-        budget.endDate,
+        budget.month,
+        budget.year,
         budget.createdAt,
         0
       ]
@@ -413,13 +443,13 @@ export const updateBudget = async (budget: Budget) => {
   try {
     await db.runAsync(
       `UPDATE budgets 
-       SET categoryId = ?, budgetLimit = ?, startDate = ?, endDate = ?, synced = 0
+       SET categoryId = ?, budgetLimit = ?, month = ?, year = ?, synced = 0
        WHERE id = ? AND userId = ?`,
       [
         budget.categoryId,
         budget.budgetLimit,
-        budget.startDate,
-        budget.endDate,
+        budget.month,
+        budget.year,
         budget.id,
         budget.userId
       ]
@@ -468,8 +498,12 @@ export const getBudgetById = async (budgetId: string) => {
   }
 };
 
-export const getBudgetSpending = async (categoryId: string, startDate: string, endDate: string) => {
+export const getBudgetSpending = async (categoryId: string, month: number, year: number) => {
   try {
+    // Calculate the first and last day of the month
+    const startDate = new Date(year, month, 1).toISOString().split('T')[0];
+    const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
+    
     const result = await db.getFirstAsync<{ totalSpent: number }>(
       `SELECT SUM(amount) as totalSpent FROM transactions 
        WHERE categoryId = ? AND date BETWEEN ? AND ? AND type = 'expense'`,
@@ -490,8 +524,8 @@ export const getBudgetsWithSpending = async (userId: string) => {
       budgets.map(async (budget) => {
         const spent = await getBudgetSpending(
           budget.categoryId, 
-          budget.startDate, 
-          budget.endDate
+          budget.month, 
+          budget.year
         );
         
         return {
@@ -506,6 +540,94 @@ export const getBudgetsWithSpending = async (userId: string) => {
     return budgetsWithSpending;
   } catch (error) {
     console.error('Error getting budgets with spending:', error);
+    throw error;
+  }
+};
+
+// Goal-specific functions
+export const addGoal = async (goal: Goal) => {
+  try {
+    await db.runAsync(
+      `INSERT INTO goals (id, userId, title, emoji, targetAmount, targetDate, accountId, includeBalance, monthlyContribution, createdAt, synced)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        goal.id,
+        goal.userId,
+        goal.title,
+        goal.emoji,
+        goal.targetAmount,
+        goal.targetDate,
+        goal.accountId,
+        goal.includeBalance ? 1 : 0,
+        goal.monthlyContribution,
+        goal.createdAt || new Date().toISOString(),
+        0
+      ]
+    );
+  } catch (error) {
+    console.error('Error adding goal:', error);
+    throw error;
+  }
+};
+
+export const updateGoal = async (goal: Goal) => {
+  try {
+    await db.runAsync(
+      `UPDATE goals 
+       SET title = ?, emoji = ?, targetAmount = ?, targetDate = ?, accountId = ?, includeBalance = ?, monthlyContribution = ?, synced = 0
+       WHERE id = ? AND userId = ?`,
+      [
+        goal.title,
+        goal.emoji,
+        goal.targetAmount,
+        goal.targetDate,
+        goal.accountId,
+        goal.includeBalance ? 1 : 0,
+        goal.monthlyContribution,
+        goal.id,
+        goal.userId
+      ]
+    );
+  } catch (error) {
+    console.error('Error updating goal:', error);
+    throw error;
+  }
+};
+
+export const deleteGoal = async (goalId: string, userId: string) => {
+  try {
+    await db.runAsync(
+      `DELETE FROM goals WHERE id = ? AND userId = ?`,
+      [goalId, userId]
+    );
+  } catch (error) {
+    console.error('Error deleting goal:', error);
+    throw error;
+  }
+};
+
+export const getGoalsByUserId = async (userId: string) => {
+  try {
+    const goals = await db.getAllAsync<Goal>(
+      `SELECT * FROM goals WHERE userId = ?`,
+      [userId]
+    );
+    return goals;
+  } catch (error) {
+    console.error('Error getting goals:', error);
+    throw error;
+  }
+};
+
+export const getGoalById = async (goalId: string) => {
+  try {
+    const goal = await db.getFirstAsync<Goal>(
+      `SELECT * FROM goals WHERE id = ?`,
+      [goalId]
+    );
+    return goal;
+  } catch (error) {
+    console.error('Error getting goal:', error);
     throw error;
   }
 };

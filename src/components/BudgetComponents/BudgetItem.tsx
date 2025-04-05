@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BudgetProgressBar from './BudgetProgressBar';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface BudgetItemProps {
   id: string;
@@ -12,8 +12,8 @@ interface BudgetItemProps {
   spent: number;
   budgetLimit: number;
   percentUsed: number;
-  startDate: string;
-  endDate: string;
+  month: number;
+  year: number;
   onEdit: (id: string) => void;
 }
 
@@ -25,16 +25,19 @@ const BudgetItem: React.FC<BudgetItemProps> = ({
   spent,
   budgetLimit,
   percentUsed,
-  startDate,
-  endDate,
+  month,
+  year,
   onEdit
 }) => {
   const { isDarkMode } = useTheme();
   
-  // Format dates for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // Get month name from month number
+  const getMonthName = (month: number) => {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month];
   };
 
   return (
@@ -89,7 +92,7 @@ const BudgetItem: React.FC<BudgetItemProps> = ({
           { color: isDarkMode ? '#B0B0B0' : '#707070' }
         ]}
       >
-        {formatDate(startDate)} - {formatDate(endDate)}
+        {getMonthName(month)} {year}
       </Text>
     </View>
   );

@@ -6,13 +6,15 @@ import {
   getAllBudgets, 
   getAllSubscriptions, 
   getAllCategories,
+  getAllGoals,
   deleteTransaction,
   deleteAccount,
   deleteBudget,
   deleteSubscription,
-  deleteCategory
+  deleteCategory,
+  deleteGoal
 } from '../../db/db';
-import { Transaction, Account, Budget, Subscription, Category } from '../types';
+import { Transaction, Account, Budget, Subscription, Category, Goal } from '../types';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function StatsScreen() {
@@ -21,6 +23,7 @@ export default function StatsScreen() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
 
   const loadData = async () => {
     try {
@@ -38,6 +41,9 @@ export default function StatsScreen() {
 
       const categoriesData = await getAllCategories() as Category[];
       setCategories(categoriesData);
+
+      const goalsData = await getAllGoals() as Goal[];
+      setGoals(goalsData);
 
     } catch (error) {
       console.error("Failed to load data:", error);
@@ -77,6 +83,9 @@ export default function StatsScreen() {
                 case 'Category':
                   await deleteCategory(id, userId);
                   break;
+                case 'Goal':
+                  await deleteGoal(id, userId);
+                  break;
               }
               // Refresh data after deletion
               loadData();
@@ -98,7 +107,7 @@ export default function StatsScreen() {
       {items.map((item) => (
         <View key={item[keyField]} style={styles.itemContainer}>
           <View style={styles.itemHeader}>
-            <Text style={styles.itemTitle}>{item.name || item.id}</Text>
+            <Text style={styles.itemTitle}>{item.name || item.title || item.id}</Text>
             <TouchableOpacity 
               onPress={() => handleDelete(type, item.id, item.userId)}
               style={styles.deleteButton}
@@ -131,6 +140,7 @@ export default function StatsScreen() {
         {renderItem('Budgets', budgets, 'id', 'Budget')}
         {renderItem('Subscriptions', subscriptions, 'id', 'Subscription')}
         {renderItem('Categories', categories, 'id', 'Category')}
+        {renderItem('Goals', goals, 'id', 'Goal')}
       </View>
     </ScrollView>
   );
