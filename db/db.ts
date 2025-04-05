@@ -64,7 +64,7 @@ const db = SQLite.openDatabaseSync('bloom_budget.db');
 // Add a table to track initialization status
 const INIT_TABLE_NAME = 'app_initialization';
 
-export const setupDatabase = async () => {
+export const setupDatabase = async (userId: string) => {
   try {
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS ${INIT_TABLE_NAME} (
@@ -141,7 +141,7 @@ export const setupDatabase = async () => {
 
     if (!result || result.initialized === 0) {
       // Insert default categories and accounts
-      await insertDefaultData();
+      await insertDefaultData(userId);
       
       // Mark initialization as complete
       await db.runAsync(
@@ -179,33 +179,33 @@ const migrateDatabase = async () => {
   }
 };
 
-const insertDefaultData = async () => {
+const insertDefaultData = async (userId: string) => {
   try {
     // Insert default accounts
     await db.runAsync(`
       INSERT OR IGNORE INTO accounts (id, userId, name, balance, icon, createdAt, updatedAt)
       VALUES 
-        ('cash_1', 'default_user', 'Cash', 0, 'cash', datetime('now'), datetime('now')),
-        ('bank_1', 'default_user', 'Bank Account', 0, 'bank', datetime('now'), datetime('now'));
-    `);
+        ('cash_1', ?, 'Cash', 0, '💵', datetime('now'), datetime('now')),
+        ('bank_1', ?, 'Bank Account', '🏛️', 'bank', datetime('now'), datetime('now'));
+    `, [userId, userId]);
 
     // Insert default categories
     await db.runAsync(`
       INSERT OR IGNORE INTO categories (id, userId, name, type, icon, color, createdAt)
       VALUES 
-        ('food_1', 'default_user', 'Food & Dining', 'expense', 'food', '#FF6B6B', datetime('now')),
-        ('transport_1', 'default_user', 'Transportation', 'expense', 'car', '#4ECDC4', datetime('now')),
-        ('shopping_1', 'default_user', 'Shopping', 'expense', 'shopping', '#45B7D1', datetime('now')),
-        ('bills_1', 'default_user', 'Bills & Utilities', 'expense', 'bill', '#96CEB4', datetime('now')),
-        ('salary_1', 'default_user', 'Salary', 'income', 'money', '#2ECC71', datetime('now')),
-        ('freelance_1', 'default_user', 'Freelance', 'income', 'laptop', '#3498DB', datetime('now')),
-        ('transfer_1', 'default_user', 'Transfer', 'transfer', 'transfer', '#9B59B6', datetime('now'));
-    `);
+        ('food_1', ?, 'Food & Dining', 'expense', '🍞', '#FF6B6B', datetime('now')),
+        ('transport_1', ?, 'Transportation', 'expense', '🚗', '#4ECDC4', datetime('now')),
+        ('shopping_1', ?, 'Shopping', 'expense', '🛒', '#45B7D1', datetime('now')),
+        ('salary_1', ?, 'Salary', 'income', '💰', '#2ECC71', datetime('now')),
+        ('freelance_1', ?, 'Freelance', 'income', '💻', '#3498DB', datetime('now')),
+        ('transfer_1', ?, 'Transfer', 'transfer', '↔️', '#9B59B6', datetime('now'));
+    `, [userId, userId, userId, userId, userId, userId, userId]);
   } catch (error) {
     console.error('Error inserting default data:', error);
     throw error;
   }
 };
+
 
 export const addTransaction = async (transaction: Transaction) => {
   try {
@@ -358,6 +358,30 @@ export const deleteTransaction = async (transactionId: string) => {
     );
   } catch (error) {
     console.error('Error deleting transaction:', error);
+    throw error;
+  }
+};
+
+export const deleteSubscription = async (subscriptionId: string, userId: string) => {
+  try {
+    await db.runAsync(
+      `DELETE FROM subscriptions WHERE id = ? AND userId = ?`,
+      [subscriptionId, userId]
+    );
+  } catch (error) {
+    console.error('Error deleting subscription:', error);
+    throw error;
+  }
+};
+
+export const deleteCategory = async (categoryId: string, userId: string) => {
+  try {
+    await db.runAsync(
+      `DELETE FROM categories WHERE id = ? AND userId = ?`,
+      [categoryId, userId]
+    );
+  } catch (error) {
+    console.error('Error deleting category:', error);
     throw error;
   }
 };

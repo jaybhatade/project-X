@@ -19,6 +19,7 @@ import db from '../../db/db';
 import DatePicker from '../components/DatePicker';
 import TransactionForm from '../components/TransactionForm';
 import TransferForm from '../components/TransferForm';
+import { useAuth } from '../contexts/AuthContext';
 
 // Add new interfaces
 interface Category {
@@ -40,6 +41,8 @@ interface Account {
 const AddTransactionScreen = () => {
   const navigation = useNavigation();
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
+  const userId = user?.uid || '';
   const [type, setType] = useState('expense');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
@@ -58,13 +61,13 @@ const AddTransactionScreen = () => {
   useEffect(() => {
     loadCategories();
     loadAccounts();
-  }, [type]);
+  }, [type, userId]);
 
   const loadCategories = async () => {
     try {
       const result = await db.getAllAsync<Category>(
-        `SELECT * FROM categories WHERE type = ? AND userId = 'default_user'`,
-        [type]
+        `SELECT * FROM categories WHERE type = ? AND userId = ?`,
+        [type, userId]
       );
       setCategories(result);
       if (result.length > 0) {
@@ -78,7 +81,8 @@ const AddTransactionScreen = () => {
   const loadAccounts = async () => {
     try {
       const result = await db.getAllAsync<Account>(
-        `SELECT * FROM accounts WHERE userId = 'default_user'`
+        `SELECT * FROM accounts WHERE userId = ?`,
+        [userId]
       );
       setAccounts(result);
       if (result.length > 0) {
@@ -127,7 +131,7 @@ const AddTransactionScreen = () => {
     try {
       const transaction = {
         id: `trans_${Date.now()}`,
-        userId: 'default_user',
+        userId,
         type,
         categoryId: type === 'transfer' ? 'transfer_1' : categoryId,
         amount: parseFloat(amount),

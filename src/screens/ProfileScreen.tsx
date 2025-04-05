@@ -1,60 +1,65 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList, MainTabParamList } from '../types/navigation';
+import { RootStackParamList } from '../types/navigation';
 
-type ProfileScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'> & {
-  navigate: (screen: keyof RootStackParamList) => void;
-};
+type ProfileScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'>;
 
 export default function ProfileScreen() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const { isDarkMode, toggleTheme } = useTheme();
+  const { user, signOut } = useAuth();
 
   const menuItems = [
+    {
+      title: 'Email',
+      icon: 'mail-outline',
+      onPress: () => {},
+      value: user?.email || 'Not set'
+    },
+    {
+      title: 'Manage Categories',
+      icon: 'list-outline',
+      onPress: () => navigation.navigate('ManageCategories'),
+    },
     {
       title: 'Manage Accounts',
       icon: 'wallet-outline',
       onPress: () => navigation.navigate('ManageAccounts'),
     },
     {
-      title: 'Manage Categories',
-      icon: 'grid-outline',
-      onPress: () => navigation.navigate('ManageCategories'),
+      title: 'All Transactions',
+      icon: 'receipt-outline',
+      onPress: () => navigation.navigate('AllTransactions'),
     },
     {
-      title: isDarkMode ? 'Light Mode' : 'Dark Mode',
-      icon: isDarkMode ? 'sunny-outline' : 'moon-outline',
-      onPress: toggleTheme,
-    },
-    {
-      title: 'Settings',
-      icon: 'settings-outline',
-      onPress: () => {},
-    },
-    {
-      title: 'Help & Support',
-      icon: 'help-circle-outline',
-      onPress: () => {},
-    },
-    {
-      title: 'About',
-      icon: 'information-circle-outline',
-      onPress: () => {},
+      title: 'Logout',
+      icon: 'log-out-outline',
+      onPress: signOut,
     },
   ];
 
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}>
       <View className="px-6 pt-12 pb-6">
-        <Text className={`text-2xl font-montserrat-bold mb-6 ${
-          isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-        }`}>
-          Profile
-        </Text>
+        <View className="flex-row justify-between items-center mb-6">
+          <Text className={`text-2xl font-montserrat-bold ${
+            isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+          }`}>
+            Profile
+          </Text>
+          <TouchableOpacity onPress={toggleTheme}>
+            <Ionicons
+              name={isDarkMode ? 'sunny-outline' : 'moon-outline'}
+              size={24}
+              color={isDarkMode ? '#FFFFFF' : '#000000'}
+            />
+          </TouchableOpacity>
+        </View>
 
         <ScrollView>
           {menuItems.map((item, index) => (
@@ -72,11 +77,20 @@ export default function ProfileScreen() {
                   color={isDarkMode ? '#FFFFFF' : '#000000'}
                   className="mr-3"
                 />
-                <Text className={`font-montserrat-medium ${
-                  isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-                }`}>
-                  {item.title}
-                </Text>
+                <View>
+                  <Text className={`font-montserrat-medium ${
+                    isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+                  }`}>
+                    {item.title}
+                  </Text>
+                  {item.value && (
+                    <Text className={`font-montserrat text-sm ${
+                      isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+                    }`}>
+                      {item.value}
+                    </Text>
+                  )}
+                </View>
               </View>
               <Ionicons
                 name="chevron-forward"
@@ -89,4 +103,4 @@ export default function ProfileScreen() {
       </View>
     </View>
   );
-} 
+}

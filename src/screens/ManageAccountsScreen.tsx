@@ -26,7 +26,8 @@ interface Account {
 }
 
 export default function ManageAccountsScreen() {
-  const userId = 'default_user';
+  const { user } = useAuth();
+  const userId = user?.uid || '';
   const { isDarkMode } = useTheme();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [modalVisible, setModalVisible] = useState(false);

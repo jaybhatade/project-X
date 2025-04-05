@@ -16,9 +16,12 @@ import BudgetItem from '../components/BudgetItem';
 import BudgetForm from '../components/BudgetForm';
 import NoData from '../components/NoData';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function BudgetScreen() {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
+  const userId = user?.uid || '';
   const [budgets, setBudgets] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -48,7 +51,6 @@ export default function BudgetScreen() {
       setCategories(allCategories);
       
       // Then load budgets with spending data
-      const userId = 'default_user'; // Should come from auth context in a real app
       const budgetsWithSpending = await db.getBudgetsWithSpending(userId);
       setBudgets(budgetsWithSpending);
     } catch (error) {
@@ -112,7 +114,7 @@ export default function BudgetScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await db.deleteBudget(id, 'default_user');
+              await db.deleteBudget(id, userId);
               loadData();
             } catch (error) {
               console.error('Error deleting budget:', error);

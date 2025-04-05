@@ -13,6 +13,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import db from '../../db/db';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Category {
   id: string;
@@ -36,6 +37,8 @@ const isTextAndNumbersOnly = (str: string): boolean => {
 
 export default function ManageCategoriesScreen() {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
+  const userId = user?.uid || '';
   const [categories, setCategories] = useState<Category[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -49,14 +52,15 @@ export default function ManageCategoriesScreen() {
   const loadCategories = useCallback(async () => {
     try {
       const result = await db.getAllAsync<Category>(
-        `SELECT * FROM categories WHERE userId = 'default_user' ORDER BY id`
+        `SELECT * FROM categories WHERE userId = ? ORDER BY id`,
+        [userId]
       );
       setCategories(result);
     } catch (error) {
       console.error('Error loading categories:', error);
       Alert.alert('Error', 'Failed to load categories');
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     loadCategories();
@@ -94,8 +98,8 @@ export default function ManageCategoriesScreen() {
       const id = `cat_${Date.now()}`;
       await db.runAsync(
         `INSERT INTO categories (id, userId, name, type, icon, color, createdAt)
-         VALUES (?, 'default_user', ?, ?, ?, ?, datetime('now'))`,
-        [id, formData.name, formData.type, formData.icon, formData.color]
+         VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`,
+        [id, userId, formData.name, formData.type, formData.icon, formData.color]
       );
       await loadCategories();
       closeModal();

@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import DatePicker from './DatePicker';
 import { useTheme } from '../contexts/ThemeContext';
 import * as db from '../../db/db';
+import { useAuth } from '../contexts/AuthContext';
 
 interface BudgetFormProps {
   visible: boolean;
@@ -27,6 +28,8 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
   editBudget 
 }) => {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
+  const userId = user?.uid || '';
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [budgetLimit, setBudgetLimit] = useState<string>('');
@@ -84,7 +87,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
 
     const budget = {
       id: editBudget ? editBudget.id : `budget_${Date.now()}`,
-      userId: 'default_user', // This should come from auth context in a real app
+      userId: userId,
       categoryId: selectedCategory,
       budgetLimit: parseFloat(budgetLimit),
       startDate: startDate.toISOString(),

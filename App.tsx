@@ -7,13 +7,13 @@ import AppNavigator from './src/navigation/AppNavigator';
 
 export default function App() {
   return (
-    <DatabaseProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <DatabaseProvider>
         <ThemeProvider>
           <AppNavigator />
           <StatusBar style="auto" />
         </ThemeProvider>
-      </AuthProvider>
-    </DatabaseProvider>
+      </DatabaseProvider>
+    </AuthProvider>
   );
 }

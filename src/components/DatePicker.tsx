@@ -60,11 +60,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ date, onChange, label }) => {
           mode="date"
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={onDateChange}
-          maximumDate={new Date()}
         />
       )}
     </View>
   );
 };
 
-export default DatePicker; 
+export default DatePicker;

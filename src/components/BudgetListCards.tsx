@@ -5,6 +5,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import BudgetProgressBar from './BudgetProgressBar';
 import * as db from '../../db/db';
 import NoData from './NoData';
+import { useAuth } from '../contexts/AuthContext';
 
 // Budget and Category interfaces to match db types
 interface Budget {
@@ -29,6 +30,8 @@ interface Category {
 
 const BudgetListCards: React.FC = () => {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
+  const userId = user?.uid || '';
   const navigation = useNavigation();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -52,7 +55,6 @@ const BudgetListCards: React.FC = () => {
       setCategories(allCategories);
       
       // Then load budgets with spending data
-      const userId = 'default_user'; // Should come from auth context in a real app
       const budgetsWithSpending = await db.getBudgetsWithSpending(userId);
       setBudgets(budgetsWithSpending);
     } catch (error) {

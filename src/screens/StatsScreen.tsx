@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { getAllTransactions, getAllAccounts, getAllBudgets, getAllSubscriptions, getAllCategories } from '../../db/db';
-import { Transaction, Account, Budget, Subscription, Category } from '../../types'; // Assuming these types are defined
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { 
+  getAllTransactions, 
+  getAllAccounts, 
+  getAllBudgets, 
+  getAllSubscriptions, 
+  getAllCategories,
+  deleteTransaction,
+  deleteAccount,
+  deleteBudget,
+  deleteSubscription,
+  deleteCategory
+} from '../../db/db';
+import { Transaction, Account, Budget, Subscription, Category } from '../types';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function StatsScreen() {
@@ -37,14 +48,67 @@ export default function StatsScreen() {
     loadData();
   }, []);
 
-  const renderItem = (label: string, items: any[], keyField: string) => (
+  const handleDelete = async (type: string, id: string, userId: string) => {
+    Alert.alert(
+      "Confirm Delete",
+      `Are you sure you want to delete this ${type.toLowerCase()}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        { 
+          text: "Delete", 
+          onPress: async () => {
+            try {
+              switch (type) {
+                case 'Transaction':
+                  await deleteTransaction(id);
+                  break;
+                case 'Account':
+                  await deleteAccount(id, userId);
+                  break;
+                case 'Budget':
+                  await deleteBudget(id, userId);
+                  break;
+                case 'Subscription':
+                  await deleteSubscription(id, userId);
+                  break;
+                case 'Category':
+                  await deleteCategory(id, userId);
+                  break;
+              }
+              // Refresh data after deletion
+              loadData();
+              Alert.alert("Success", `${type} deleted successfully`);
+            } catch (error) {
+              console.error(`Error deleting ${type}:`, error);
+              Alert.alert("Error", `Failed to delete ${type.toLowerCase()}`);
+            }
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
+  const renderItem = (label: string, items: any[], keyField: string, type: string) => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{label} ({items.length})</Text>
       {items.map((item) => (
         <View key={item[keyField]} style={styles.itemContainer}>
+          <View style={styles.itemHeader}>
+            <Text style={styles.itemTitle}>{item.name || item.id}</Text>
+            <TouchableOpacity 
+              onPress={() => handleDelete(type, item.id, item.userId)}
+              style={styles.deleteButton}
+            >
+              <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+            </TouchableOpacity>
+          </View>
           {Object.entries(item).map(([key, value]) => (
             <Text key={key} style={styles.itemText}>
-              {key}: {value}
+              {key}: {value !== null && value !== undefined ? String(value) : ''}
             </Text>
           ))}
         </View>
@@ -62,11 +126,11 @@ export default function StatsScreen() {
           </TouchableOpacity>
         </View>
         
-        {renderItem('Transactions', transactions, 'id')}
-        {renderItem('Accounts', accounts, 'id')}
-        {renderItem('Budgets', budgets, 'id')}
-        {renderItem('Subscriptions', subscriptions, 'id')}
-        {renderItem('Categories', categories, 'id')}
+        {renderItem('Transactions', transactions, 'id', 'Transaction')}
+        {renderItem('Accounts', accounts, 'id', 'Account')}
+        {renderItem('Budgets', budgets, 'id', 'Budget')}
+        {renderItem('Subscriptions', subscriptions, 'id', 'Subscription')}
+        {renderItem('Categories', categories, 'id', 'Category')}
       </View>
     </ScrollView>
   );
@@ -109,6 +173,20 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 10,
     elevation: 2,
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  itemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  deleteButton: {
+    padding: 5,
   },
   itemText: {
     fontSize: 14,
