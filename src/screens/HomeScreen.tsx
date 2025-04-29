@@ -8,6 +8,7 @@ import { auth, signOut } from '../services/firebase';
 import { Ionicons } from '@expo/vector-icons';
 import RecentTransactions from '../components/RecentTransactions';
 import BudgetListCards from '../components/BudgetComponents/BudgetListCards';
+import BalanceCard from '../components/BalanceCard';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'> & {
   navigate: (screen: keyof RootStackParamList) => void;
@@ -36,102 +37,55 @@ export default function HomeScreen() {
         )}
         scrollEventThrottle={16}
       >
-        <View className=" pt-12 pb-6">
+        <View className="pt-12 pb-6">
           {/* Header */}
           <View className="flex-row justify-between items-center px-6 mb-8">
-            <Text className={`text-2xl font-montserrat-bold ${
+            <View className="flex-row items-center space-x-3">
+              <View className={`w-12 h-12 rounded-full items-center justify-center ${
+                isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
+              }`}>
+                <Text className="text-xl font-montserrat-bold text-white">JB</Text>
+              </View>
+              <View>
+                <Text className="text-sm font-montserrat-medium text-TextSecondary">Welcome back,</Text>
+                <Text className={`text-lg font-montserrat-bold ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-            }`}>
-              BloomBudget
-            </Text>
+                }`}>Jay Bhatade</Text>
+              </View>
+            </View>
             <TouchableOpacity
-              onPress={handleLogout}
-              className={`p-2 rounded-full ${
+              onPress={() => navigation.navigate('Notifications')}
+              className={`w-12 h-12 rounded-full items-center justify-center ${
                 isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
               }`}
             >
-              <Text className={`font-montserrat-medium ${
-                isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-              }`}>
-                🚪
-              </Text>
+              <Ionicons name="notifications-outline" size={24} color={isDarkMode ? '#FFFFFF' : '#000000'} />
             </TouchableOpacity>
           </View>
 
           {/* Balance Card */}
-          <View className={`p-6 rounded-xl mx-6 mb-8 ${
-            isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
-          }`}>
-            <Text className="text-white font-montserrat-medium mb-2">
-              Total Balance
-            </Text>
-            <Text className="text-white text-3xl font-montserrat-bold">
-              ₹25,000
-            </Text>
-            <View className="flex-row justify-between mt-4">
-              <View>
-                <Text className="text-white/80 font-montserrat text-sm">
-                  Income
-                </Text>
-                <Text className="text-white font-montserrat-semibold">
-                  ₹30,000
-                </Text>
-              </View>
-              <View>
-                <Text className="text-white/80 font-montserrat text-sm">
-                  Expenses
-                </Text>
-                <Text className="text-white font-montserrat-semibold">
-                  ₹5,000
-                </Text>
-              </View>
-            </View>
-          </View>
-
-
-
-          {/* Recent Transactions */}
-          <RecentTransactions />
+          <BalanceCard />
 
           {/* Budget Overview */}
-          <View className=" mb-8">
-            <Text className={`text-lg px-6 font-montserrat-semibold mb-4 ${
+          <View className="mb-8">
+            <View className="flex-row justify-between items-center px-6 mb-4">
+              <Text className={`text-lg font-montserrat-semibold ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
             }`}>
               Budget Overview
             </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Budget')}>
+                <Text className="text-sm font-montserrat-medium text-Primary">
+                  view all
+                </Text>
+              </TouchableOpacity>
+            </View>
             <BudgetListCards />
           </View>
 
-          {/* Financial Goals */}
-          <View>
-            <Text className={`text-lg font-montserrat-semibold mb-4 ${
-              isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-            }`}>
-              Financial Goals
-            </Text>
-            <View className="space-y-4">
-              {['Save ₹50,000', 'Pay off Credit Card', 'Invest ₹20,000'].map((goal, index) => (
-                <View 
-                  key={index}
-                  className={`p-4 rounded-xl ${
-                    isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
-                  }`}
-                >
-                  <Text className={`font-montserrat-medium mb-2 ${
-                    isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-                  }`}>
-                    {goal}
-                  </Text>
-                  <View className="w-full h-2 rounded-full bg-gray-200">
-                    <View 
-                      className="h-2 rounded-full bg-blue-500" 
-                      style={{ width: `${(index + 1) * 30}%` }}
-                    />
-                  </View>
-                </View>
-              ))}
-            </View>
+          {/* Recent Transactions */}
+          <View className="mb-8">
+            <RecentTransactions />
           </View>
         </View>
       </Animated.ScrollView>

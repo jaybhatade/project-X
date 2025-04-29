@@ -8,6 +8,7 @@ import AddTransactionScreen from '../screens/AddTransactionScreen';
 import ManageCategoriesScreen from '../screens/ManageCategoriesScreen';
 import ManageAccountsScreen from '../screens/ManageAccountsScreen';
 import AllTransactionsScreen from '../screens/AllTransactionsScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 import { RootStackParamList } from '../types/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
@@ -58,6 +59,18 @@ export default function AppNavigator() {
               options={{
                 headerShown: true,
                 title: 'Add Transaction',
+                headerStyle: {
+                  backgroundColor: '#21965B',
+                },
+                headerTintColor: '#FFFFFF',
+              }}
+            />
+            <Stack.Screen 
+              name="Notifications" 
+              component={NotificationsScreen}
+              options={{
+                headerShown: true,
+                title: 'Notifications',
                 headerStyle: {
                   backgroundColor: '#21965B',
                 },
