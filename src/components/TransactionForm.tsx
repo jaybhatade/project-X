@@ -89,8 +89,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         >
           {categories.find(cat => cat.id === categoryId) ? (
             <View style={styles.selectedCategory}>
-              <View style={[styles.iconContainer, { backgroundColor: categories.find(cat => cat.id === categoryId)?.color }]}>
-                <Text style={{ fontSize: 20, color: '#FFFFFF' }}>
+              <View style={[styles.iconContainer, { borderColor: categories.find(cat => cat.id === categoryId)?.color, borderWidth: 2 }]}>
+                <Text style={{ fontSize: 20, color: categories.find(cat => cat.id === categoryId)?.color }}>
                   {categories.find(cat => cat.id === categoryId)?.icon}
                 </Text>
               </View>

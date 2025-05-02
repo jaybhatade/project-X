@@ -185,132 +185,173 @@ export default function AllTransactionsScreen() {
               }`}>
                 Transaction Details
               </Text>
-              <View className="flex-row">
-                <TouchableOpacity 
-                  onPress={() => {
-                    Alert.alert(
-                      'Delete Transaction',
-                      'Are you sure you want to delete this transaction?',
-                      [
-                        {
-                          text: 'Cancel',
-                          style: 'cancel'
-                        },
-                        {
-                          text: 'Delete',
-                          style: 'destructive',
-                          onPress: () => handleDeleteTransaction(transaction)
-                        }
-                      ]
-                    );
-                  }}
-                  className="mr-4"
-                >
-                  <Ionicons 
-                    name="trash-outline" 
-                    size={24} 
-                    color="#FF3B30" 
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={onClose}>
-                  <Ionicons 
-                    name="close" 
-                    size={24} 
-                    color={isDarkMode ? '#FFFFFF' : '#000000'} 
-                  />
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity onPress={onClose}>
+                <Ionicons 
+                  name="close" 
+                  size={24} 
+                  color={isDarkMode ? '#FFFFFF' : '#000000'} 
+                />
+              </TouchableOpacity>
             </View>
 
             <View className="p-6">
-              <View className="items-center mb-8">
+              <View className="items-center mb-6">
                 <View 
-                  className={`w-20 h-20 rounded-full items-center justify-center mb-4`}
-                  style={{ backgroundColor: transaction.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}
+                  className={`w-24 h-24 rounded-full items-center justify-center mb-4 border-2 shadow-sm`}
+                  style={{ 
+                    borderColor: transaction.type === 'transfer' ? '#21965B' : (category?.color || '#21965B'),
+                    backgroundColor: isDarkMode ? '#1E1E1E' : '#F8F8F8'
+                  }}
                 >
-                  <Text className="text-3xl">{getTransactionIcon()}</Text>
+                  <Text className="text-4xl">{getTransactionIcon()}</Text>
                 </View>
-                <Text className={`text-3xl font-montserrat-bold mb-2`} style={{ color: getAmountColor() }}>
-                  {transaction.type === 'transfer' ? '→' : (transaction.type === 'expense' ? '-' : '+')}₹{transaction.amount.toLocaleString()}
+                <Text className={`text-3xl font-montserrat-bold mb-1`} style={{ color: getAmountColor() }}>
+                  {transaction.type === 'transfer' ? '' : (transaction.type === 'expense' ? '-' : '+')}₹{transaction.amount.toLocaleString()}
                 </Text>
-                <Text className={`font-montserrat-medium text-lg ${
+                <Text className={`font-montserrat-medium text-lg mb-2 ${
                   isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                 }`}>
                   {transaction.type === 'transfer' 
                     ? `Transfer to ${transferToAccount?.name || 'Unknown Account'}`
                     : category?.name || 'Unknown Category'}
                 </Text>
-              </View>
-
-              <View className="space-y-6">
-                <View className="flex-row justify-between items-center">
-                  <Text className={`font-montserrat-medium ${
-                    isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+                <View className={`px-3 py-1 rounded-full ${
+                  transaction.type === 'expense' 
+                    ? 'bg-red-100' 
+                    : transaction.type === 'income' 
+                      ? 'bg-green-100' 
+                      : 'bg-blue-100'
+                }`}>
+                  <Text className={`font-montserrat-medium text-xs ${
+                    transaction.type === 'expense' 
+                      ? 'text-red-700' 
+                      : transaction.type === 'income' 
+                        ? 'text-green-700' 
+                        : 'text-blue-700'
                   }`}>
-                    Date
-                  </Text>
-                  <Text className={`font-montserrat ${
-                    isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-                  }`}>
-                    {formatDate(transaction.date)}
+                    {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
                   </Text>
                 </View>
+              </View>
 
-                <View>
-                  <Text className={`font-montserrat-medium mb-2 ${
-                    isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
-                  }`}>
-                    {transaction.type === 'transfer' ? 'From Account' : 'Account'}
-                  </Text>
-                  <View className={`p-3 rounded-xl ${
-                    isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
-                  }`}>
+              <View className={`p-4 rounded-xl ${
+                isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
+              }`}>
+                <View className="space-y-4 gap-4">
+                  <View className="flex-row justify-between items-center">
+                    <View className="flex-row items-center">
+                      <Ionicons 
+                        name="calendar-outline" 
+                        size={20} 
+                        color={isDarkMode ? '#AAAAAA' : '#666666'} 
+                        className="mr-2"
+                      />
+                      <Text className={`font-montserrat-medium ${
+                        isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+                      }`}>
+                        Date
+                      </Text>
+                    </View>
+                    <Text className={`font-montserrat ${
+                      isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
+                    }`}>
+                      {formatDate(transaction.date)}
+                    </Text>
+                  </View>
+
+                  <View className="flex-row justify-between items-center">
+                    <View className="flex-row items-center">
+                      <Ionicons 
+                        name="wallet-outline" 
+                        size={20} 
+                        color={isDarkMode ? '#AAAAAA' : '#666666'} 
+                        className="mr-2"
+                      />
+                      <Text className={`font-montserrat-medium ${
+                        isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+                      }`}>
+                        {transaction.type === 'transfer' ? 'From Account' : 'Account'}
+                      </Text>
+                    </View>
                     <Text className={`font-montserrat ${
                       isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                     }`}>
                       {account?.name || 'Unknown Account'}
                     </Text>
                   </View>
-                </View>
 
-                {transaction.type === 'transfer' && (
-                  <View>
-                    <Text className={`font-montserrat-medium mb-2 ${
-                      isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
-                    }`}>
-                      To Account
-                    </Text>
-                    <View className={`p-3 rounded-xl ${
-                      isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
-                    }`}>
+                  {transaction.type === 'transfer' && (
+                    <View className="flex-row justify-between items-center">
+                      <View className="flex-row items-center">
+                        <Ionicons 
+                          name="arrow-forward-circle-outline" 
+                          size={20} 
+                          color={isDarkMode ? '#AAAAAA' : '#666666'} 
+                          className="mr-2"
+                        />
+                        <Text className={`font-montserrat-medium ${
+                          isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+                        }`}>
+                          To Account
+                        </Text>
+                      </View>
                       <Text className={`font-montserrat ${
                         isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                       }`}>
                         {transferToAccount?.name || 'Unknown Account'}
                       </Text>
                     </View>
-                  </View>
-                )}
+                  )}
 
-                {transaction.notes && (
-                  <View>
-                    <Text className={`font-montserrat-medium mb-2 ${
-                      isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
-                    }`}>
-                      Notes
-                    </Text>
-                    <View className={`p-3 rounded-xl ${
-                      isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
-                    }`}>
+                  {transaction.notes && (
+                    <View>
+                      <View className="flex-row items-center mb-2">
+                        <Ionicons 
+                          name="document-text-outline" 
+                          size={20} 
+                          color={isDarkMode ? '#AAAAAA' : '#666666'} 
+                          className="mr-2"
+                        />
+                        <Text className={`font-montserrat-medium ${
+                          isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+                        }`}>
+                          Notes
+                        </Text>
+                      </View>
                       <Text className={`font-montserrat ${
                         isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                       }`}>
                         {transaction.notes}
                       </Text>
                     </View>
-                  </View>
-                )}
+                  )}
+                </View>
               </View>
+              
+              <TouchableOpacity
+                onPress={() => {
+                  Alert.alert(
+                    'Delete Transaction',
+                    'Are you sure you want to delete this transaction?',
+                    [
+                      {
+                        text: 'Cancel',
+                        style: 'cancel'
+                      },
+                      {
+                        text: 'Delete',
+                        style: 'destructive',
+                        onPress: () => handleDeleteTransaction(transaction)
+                      }
+                    ]
+                  );
+                }}
+                className={`mt-8 p-4 rounded-xl border border-red-500 mb-4`}
+              >
+                <Text className="text-red-500 font-montserrat-semibold text-center">
+                  Delete Transaction
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -340,10 +381,10 @@ export default function AllTransactionsScreen() {
       >
         <View className="flex-row items-center">
           <View 
-            className={`w-10 h-10 rounded-full items-center justify-center mr-3`}
-            style={{ backgroundColor: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}
+            className={`w-10 h-10 rounded-full items-center justify-center mr-3 border-2`}
+            style={{ borderColor: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}
           >
-            <Text className="text-white">
+            <Text style={{ color: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}>
               {item.type === 'transfer' ? '↔️' : (category?.icon || '💰')}
             </Text>
           </View>
@@ -483,7 +524,7 @@ export default function AllTransactionsScreen() {
         </View>
 
         <View className="flex-row items-center mb-6">
-          <View className={`flex-1 flex-row items-center rounded-xl p-3 mr-3 ${
+          <View className={`flex-1 flex-row items-center rounded-xl h-[55px] pl-3 mr-3 ${
             isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
           }`}>
             <Ionicons 
@@ -503,7 +544,7 @@ export default function AllTransactionsScreen() {
           </View>
           <TouchableOpacity
             onPress={() => setShowFilterModal(true)}
-            className={`p-3 rounded-xl ${
+            className={`p-3 h-[55px] flex items-center justify-center rounded-xl ${
               isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
             }`}
           >

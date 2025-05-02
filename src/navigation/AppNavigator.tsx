@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/Auth/LoginScreen';
@@ -9,15 +9,35 @@ import ManageCategoriesScreen from '../screens/ManageCategoriesScreen';
 import ManageAccountsScreen from '../screens/ManageAccountsScreen';
 import AllTransactionsScreen from '../screens/AllTransactionsScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import DatabaseScreen from '../screens/DatabaseScreen';
 import { RootStackParamList } from '../types/navigation';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { View, ActivityIndicator } from 'react-native';
 import MainTabsNavigator from './MainTabsNavigator';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+// Define custom themes
+const MyLightTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#FFFFFF', // Your Background color
+  },
+};
+
+const MyDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: '#121212', // Your BackgroundDark color
+  },
+};
+
 export default function AppNavigator() {
   const { user, loading } = useAuth();
+  const { isDarkMode } = useTheme(); // Get theme state
 
   if (loading) {
     return (
@@ -28,10 +48,13 @@ export default function AppNavigator() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={isDarkMode ? MyDarkTheme : MyLightTheme}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
+          animation:'fade',
+          animationDuration: 300,
+          presentation: 'transparentModal'
         }}
       >
         {!user ? (
@@ -107,6 +130,18 @@ export default function AppNavigator() {
               options={{
                 headerShown: true,
                 title: 'All Transactions',
+                headerStyle: {
+                  backgroundColor: '#21965B',
+                },
+                headerTintColor: '#FFFFFF',
+              }}
+            />
+            <Stack.Screen 
+              name="Database" 
+              component={DatabaseScreen}
+              options={{
+                headerShown: true,
+                title: 'Database',
                 headerStyle: {
                   backgroundColor: '#21965B',
                 },

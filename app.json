@@ -14,11 +14,14 @@
     ],
     "orientation": "portrait",
     "icon": "./assets/Logo.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/Logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffffff",
+      "dark": {
+        "backgroundColor": "#121212"
+      }
     },
     "assetBundlePatterns": [
       "**/*"
@@ -29,7 +32,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/Logo.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "dark": {
+          "backgroundColor": "#121212"
+        }
       },
       "package": "com.jay7.bloombudget",
       "newArchEnabled": true

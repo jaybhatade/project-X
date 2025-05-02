@@ -213,8 +213,8 @@ const AddTransactionScreen = () => {
                   setShowCategoryModal(false);
                 }}
               >
-                <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-                  <Text style={{ fontSize: 20, color: '#FFFFFF' }}>{item.icon}</Text>
+                <View style={[styles.iconContainer, { borderColor: item.color, borderWidth: 2 }]}>
+                  <Text style={{ fontSize: 20, color: item.color }}>{item.icon}</Text>
                 </View>
                 <Text style={[styles.categoryName, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>{item.name}</Text>
                 {categoryId === item.id && (

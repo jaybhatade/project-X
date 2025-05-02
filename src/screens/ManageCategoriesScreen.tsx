@@ -189,7 +189,7 @@ export default function ManageCategoriesScreen() {
       <View className="flex-row items-center flex-1">
         <View 
           className="w-12 h-12 rounded-full items-center justify-center mr-4"
-          style={{ backgroundColor: item.color }}
+          style={{ borderColor: item.color, borderWidth: 2 }}
         >
           <Text className="text-2xl">{item.icon}</Text>
         </View>
@@ -228,34 +228,48 @@ export default function ManageCategoriesScreen() {
     </View>
   );
 
+  const EmptyListComponent = () => (
+    <View className="flex-1 items-center justify-center">
+      <Ionicons
+        name="folder-open-outline"
+        size={80}
+        color={isDarkMode ? '#666666' : '#999999'}
+      />
+      <Text className={`mt-4 text-lg font-montserrat-medium text-center ${
+        isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+      }`}>
+        No categories yet
+      </Text>
+      <Text className={`mt-2 text-sm font-montserrat text-center ${
+        isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+      }`}>
+        Add a category to get started
+      </Text>
+    </View>
+  );
+
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}>
-      <View className="px-6 pt-12 pb-6">
-        <Text className={`text-2xl font-montserrat-bold mb-6 ${
-          isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-        }`}>
-          Manage Categories
-        </Text>
-
-        <TouchableOpacity
-          onPress={openAddModal}
-          className={`p-4 rounded-xl mb-6 flex-row items-center justify-center ${
-            isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
-          }`}
-        >
-          <Ionicons name="add" size={24} color="#FFFFFF" />
-          <Text className="text-white font-montserrat-semibold ml-2">
-            Add New Category
-          </Text>
-        </TouchableOpacity>
-
+      <View className="px-6 pt-12 pb-6 flex-1">
         <FlatList
           data={categories}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={EmptyListComponent}
+          contentContainerStyle={{ flexGrow: 1 }}
         />
       </View>
+
+      <TouchableOpacity
+        onPress={openAddModal}
+        className={`absolute bottom-8 right-8 w-14 h-14 rounded-full items-center justify-center ${
+          isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
+        }`}
+        style={{ elevation: 5 }}
+      >
+        <Ionicons name="add" size={30} color="#FFFFFF" />
+      </TouchableOpacity>
 
       <Modal
         visible={isModalVisible}
@@ -398,4 +412,4 @@ export default function ManageCategoriesScreen() {
       </Modal>
     </View>
   );
-} 
+}

@@ -37,6 +37,11 @@ export default function ProfileScreen() {
       onPress: () => navigation.navigate('AllTransactions'),
     },
     {
+      title: 'Database',
+      icon: 'server-outline',
+      onPress: () => navigation.navigate('Database'),
+    },
+    {
       title: 'Logout',
       icon: 'log-out-outline',
       onPress: signOut,

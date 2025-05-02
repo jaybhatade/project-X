@@ -135,10 +135,10 @@ export default function RecentTransactions() {
       >
         <View className="flex-row items-center">
           <View 
-            className={`w-10 h-10 rounded-full items-center justify-center mr-3`}
-            style={{ backgroundColor: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}
+            className={`w-10 h-10 rounded-full items-center justify-center mr-3 border-2`}
+            style={{ borderColor: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}
           >
-            <Text className="text-white">
+            <Text style={{ color: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}>
               {item.type === 'transfer' ? '↔️' : (category?.icon || '💰')}
             </Text>
           </View>
