@@ -1,10 +1,14 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { SafeAreaView } from 'react-native';
+import { ChatProvider } from '../contexts/ChatContext';
+import ChatScreen from '../components/chat/ChatScreen';
 
 export default function AIScreen() {
   return (
-    <View className="flex-1 justify-center items-center">
-      <Text className="text-xl font-semibold">AI Screen</Text>
-    </View>
+    <SafeAreaView className="flex-1">
+      <ChatProvider>
+        <ChatScreen />
+      </ChatProvider>
+    </SafeAreaView>
   );
 } 
