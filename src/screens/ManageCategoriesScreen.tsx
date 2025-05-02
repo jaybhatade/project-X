@@ -302,13 +302,13 @@ export default function ManageCategoriesScreen() {
               <View className="flex-row items-center mb-6">
                 <View 
                   className="w-16 h-16 rounded-xl items-center justify-center mr-4"
-                  style={{ backgroundColor: formData.color }}
+                  style={{ borderColor: formData.color, borderWidth: 2 }}
                 >
                   <TextInput
                     className="text-3xl text-center"
                     value={formData.icon}
                     onChangeText={handleIconChange}
-                    placeholder="Add emoji"
+                    placeholder="📚"
                     placeholderTextColor={isDarkMode ? '#B0B0B0' : '#707070'}
                     maxLength={2}
                     editable={true}
@@ -334,6 +334,11 @@ export default function ManageCategoriesScreen() {
                   />
                 </View>
               </View>
+              <Text className={`font-montserrat-medium mb-3 ${
+                isDarkMode ? 'text-gray-400/50' : 'text-gray-500/50'
+              }`}>
+                * Add custom emoji for the icon
+              </Text>
 
               <Text className={`font-montserrat-medium mb-3 ${
                 isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'

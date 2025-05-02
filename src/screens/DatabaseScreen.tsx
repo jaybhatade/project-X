@@ -9,6 +9,7 @@ import {
   getAllSubscriptions,
   getAllGoals
 } from '../../db/db';
+import { Ionicons } from '@expo/vector-icons';
 
 interface DatabaseData {
   transactions: any[];
@@ -60,6 +61,30 @@ export default function DatabaseScreen() {
 
     fetchData();
   }, []);
+
+  const handleRefresh = async () => {
+    try {
+      setLoading(true);
+      const transactions = await getAllTransactions();
+      const accounts = await getAllAccounts();
+      const budgets = await getAllBudgets();
+      const categories = await getAllCategories();
+      const subscriptions = await getAllSubscriptions();
+      const goals = await getAllGoals();
+      setData({
+        transactions,
+        accounts,
+        budgets,
+        categories,
+        subscriptions,
+        goals
+      });
+    } catch (error) {
+      console.error('Error refreshing database data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderTabBar = () => {
     const tabs = [
@@ -167,6 +192,19 @@ export default function DatabaseScreen() {
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}>
       <View className="px-6 pt-12 pb-6">
+        <View className="flex-row justify-end items-center mb-2">
+          <TouchableOpacity
+            onPress={handleRefresh}
+            disabled={loading}
+            className={`p-2 rounded-full ${isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'}`}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color={isDarkMode ? '#FFFFFF' : '#000000'} />
+            ) : (
+              <Ionicons name="refresh" size={24} color={isDarkMode ? '#FFFFFF' : '#000000'} />
+            )}
+          </TouchableOpacity>
+        </View>
         {renderTabBar()}
         {renderContent()}
       </View>

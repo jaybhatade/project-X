@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import * as db from '../../../db/db';
 import { useAuth } from '../../contexts/AuthContext';
+import CategorySelectionTrigger from '../CategorySelectionTrigger';
 
 interface BudgetFormProps {
   visible: boolean;
@@ -155,90 +156,13 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
               >
                 Category
               </Text>
-              <TouchableOpacity
-                style={[
-                  styles.categorySelector,
-                  { 
-                    backgroundColor: isDarkMode ? '#333333' : '#F5F5F5',
-                    borderColor: isDarkMode ? '#555555' : '#DDDDDD'
-                  }
-                ]}
-                onPress={() => setShowCategories(!showCategories)}
-              >
-                {selectedCategory ? (
-                  <View style={styles.selectedCategory}>
-                    <View 
-                      style={[
-                        styles.categoryIcon,
-                        { 
-                          backgroundColor: getCategoryById(selectedCategory)?.color || '#21965B' 
-                        }
-                      ]}
-                    >
-                      <Text style={{ color: '#FFFFFF' }}>
-                        {getCategoryById(selectedCategory)?.icon || '📦'}
-                      </Text>
-                    </View>
-                    <Text 
-                      style={{ 
-                        color: isDarkMode ? '#FFFFFF' : '#000000',
-                        marginLeft: 10
-                      }}
-                    >
-                      {getCategoryById(selectedCategory)?.name || 'Select Category'}
-                    </Text>
-                  </View>
-                ) : (
-                  <Text 
-                    style={{ 
-                      color: isDarkMode ? '#B0B0B0' : '#707070' 
-                    }}
-                  >
-                    Select Category
-                  </Text>
-                )}
-                <Ionicons 
-                  name={showCategories ? 'chevron-up' : 'chevron-down'} 
-                  size={20} 
-                  color={isDarkMode ? '#B0B0B0' : '#707070'} 
-                />
-              </TouchableOpacity>
-
-              {showCategories && (
-                <View 
-                  style={[
-                    styles.categoriesList,
-                    { backgroundColor: isDarkMode ? '#333333' : '#F5F5F5' }
-                  ]}
-                >
-                  {categories.map(category => (
-                    <TouchableOpacity
-                      key={category.id}
-                      style={styles.categoryItem}
-                      onPress={() => {
-                        setSelectedCategory(category.id);
-                        setShowCategories(false);
-                      }}
-                    >
-                      <View 
-                        style={[
-                          styles.categoryIcon,
-                          { backgroundColor: category.color }
-                        ]}
-                      >
-                        <Text style={{ color: '#FFFFFF' }}>{category.icon}</Text>
-                      </View>
-                      <Text 
-                        style={{ 
-                          color: isDarkMode ? '#FFFFFF' : '#000000' 
-                        }}
-                      >
-                        {category.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
+              <CategorySelectionTrigger 
+                selectedCategory={selectedCategory}
+                onCategorySelect={(categoryId) => setSelectedCategory(categoryId)}
+                categoryType="expense"
+                buttonLabel="Select budget category"
+                getCategoryById={getCategoryById}
+              />
             </View>
 
             {/* Budget Limit */}
