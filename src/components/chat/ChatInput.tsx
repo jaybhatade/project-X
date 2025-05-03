@@ -28,7 +28,7 @@ export default function ChatInput({ onSend, loading, isDarkMode }: ChatInputProp
       borderWidth: 1,
       borderColor: theme.border,
       borderRadius: 20,
-      paddingHorizontal: 16,
+      paddingHorizontal: 8,
       paddingVertical: 8,
       marginHorizontal: 16,
       marginBottom: 20,

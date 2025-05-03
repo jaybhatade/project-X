@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Octicons } from '@expo/vector-icons';
 import { ChatSession } from '../../services/geminiApi';
 import { chatTheme } from '../../utils/chatTheme';
 
@@ -121,7 +121,7 @@ export default function ChatHistoryItem({
           style={styles.actionButton}
           hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
         >
-          <Ionicons name="pencil" size={18} color={theme.textSecondary} />
+          <Octicons name="pencil" size={18} color={theme.textSecondary} />
         </TouchableOpacity>
         
         <TouchableOpacity 
@@ -129,7 +129,7 @@ export default function ChatHistoryItem({
           style={styles.actionButton}
           hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
         >
-          <Ionicons name="trash" size={18} color={theme.error} />
+          <Ionicons name="trash-outline" size={18} color={theme.error} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>

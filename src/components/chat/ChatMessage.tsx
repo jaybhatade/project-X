@@ -16,20 +16,45 @@ export default function ChatMessage({ message, isDarkMode }: ChatMessageProps) {
   const theme = isDarkMode ? chatTheme.dark : chatTheme.light;
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Convert markdown links to text with styling
+  // Format text with basic markdown styling
   const formatMessageText = (text: string) => {
     // Check if message is too long
     const isLongMessage = text.length > 300;
-
-    // Format to display
     let displayText = isExpanded || !isLongMessage ? text : `${text.substring(0, 300)}...`;
 
-    // Format markdown tables more clearly
+    // Format lists
+    displayText = displayText.replace(/^\s*[-*]\s/gm, '• '); // Convert - or * to bullet points
+    displayText = displayText.replace(/^\s*\d+\.\s/gm, (match) => match.trim() + ' '); // Format numbered lists
+
+    // Format bold text
+    displayText = displayText.replace(/\*\*(.*?)\*\*/g, (_, content) => {
+      return content; // We'll style this in the Text component
+    });
+
+    // Format tables
     if (displayText.includes('|')) {
-      displayText = displayText.replace(/\|\s*\|/g, '|   |'); // Add space between empty cells
+      displayText = displayText.replace(/\|\s*\|/g, '|   |');
     }
 
     return displayText;
+  };
+
+  const renderFormattedText = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <Text key={index} style={[styles.messageText, styles.boldText]}>
+            {part.slice(2, -2)}
+          </Text>
+        );
+      }
+      return (
+        <Text key={index} style={styles.messageText}>
+          {part}
+        </Text>
+      );
+    });
   };
   
   const styles = StyleSheet.create({
@@ -53,6 +78,12 @@ export default function ChatMessage({ message, isDarkMode }: ChatMessageProps) {
       fontSize: 16,
       lineHeight: 22,
       color: isUser ? theme.userBubbleText : theme.aiBubbleText,
+    },
+    boldText: {
+      fontWeight: 'bold',
+    },
+    listItem: {
+      marginLeft: 16,
     },
     timestamp: {
       fontSize: 12,
@@ -111,9 +142,9 @@ export default function ChatMessage({ message, isDarkMode }: ChatMessageProps) {
           />
         </View>
         
-        <Text style={styles.messageText}>
-          {formatMessageText(message.content)}
-        </Text>
+        <View>
+          {renderFormattedText(formatMessageText(message.content))}
+        </View>
         
         {hasReadMore && (
           <TouchableOpacity 
