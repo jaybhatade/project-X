@@ -125,7 +125,7 @@ export default function BudgetScreen() {
   };
 
   // Handle budget delete
-  const handleDeleteBudget = (id: string) => {
+  const handleDeleteBudget = (budget: any) => {
     Alert.alert(
       'Delete Budget',
       'Are you sure you want to delete this budget?',
@@ -136,7 +136,7 @@ export default function BudgetScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await db.deleteBudget(id, userId);
+              await db.deleteBudget(budget.id, userId);
               loadData();
             } catch (error) {
               console.error('Error deleting budget:', error);
@@ -303,6 +303,7 @@ export default function BudgetScreen() {
         visible={showForm}
         onClose={() => setShowForm(false)}
         onSave={handleSaveBudget}
+        onDelete={handleDeleteBudget}
         editBudget={editBudget}
       />
     </View>

@@ -6,7 +6,8 @@ import {
   TextInput, 
   TouchableOpacity, 
   Modal, 
-  ScrollView 
+  ScrollView,
+  Switch
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -18,6 +19,7 @@ interface BudgetFormProps {
   visible: boolean;
   onClose: () => void;
   onSave: (budget: any) => void;
+  onDelete: (budget: any) => void;
   editBudget?: any;
 }
 
@@ -25,6 +27,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
   visible, 
   onClose, 
   onSave,
+  onDelete,
   editBudget 
 }) => {
   const { isDarkMode } = useTheme();
@@ -36,6 +39,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [showCategories, setShowCategories] = useState<boolean>(false);
+  const [isRecurring, setIsRecurring] = useState<boolean>(false);
 
   // Load categories on mount
   useEffect(() => {
@@ -77,6 +81,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
     setBudgetLimit('');
     setSelectedMonth(new Date().getMonth());
     setSelectedYear(new Date().getFullYear());
+    setIsRecurring(false);
   };
 
   const handleSave = () => {
@@ -85,6 +90,24 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
       return;
     }
 
+    if (isRecurring) {
+      // Create budgets for current month through December of the selected year
+      const budgets = [];
+      for (let month = selectedMonth; month <= 11; month++) {
+        const budget = {
+          id: `budget_${Date.now()}_${month}`,
+          userId: userId,
+          categoryId: selectedCategory,
+          budgetLimit: parseFloat(budgetLimit),
+          month: month,
+          year: selectedYear,
+          createdAt: new Date().toISOString(),
+          isRecurring: true
+        };
+        budgets.push(budget);
+      }
+      budgets.forEach(budget => onSave(budget));
+    } else {
     const budget = {
       id: editBudget ? editBudget.id : `budget_${Date.now()}`,
       userId: userId,
@@ -92,12 +115,21 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
       budgetLimit: parseFloat(budgetLimit),
       month: selectedMonth,
       year: selectedYear,
-      createdAt: editBudget ? editBudget.createdAt : new Date().toISOString()
+        createdAt: editBudget ? editBudget.createdAt : new Date().toISOString(),
+        isRecurring: false
     };
-
     onSave(budget);
+    }
+
     if (!editBudget) resetForm();
     onClose();
+  };
+
+  const handleDelete = () => {
+    if (editBudget) {
+      onDelete(editBudget);
+      onClose();
+    }
   };
 
   const getCategoryById = (id: string) => {
@@ -136,13 +168,27 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
             >
               {editBudget ? 'Edit Budget' : 'Create Budget'}
             </Text>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons 
-                name="close" 
-                size={24} 
-                color={isDarkMode ? '#FFFFFF' : '#000000'} 
-              />
-            </TouchableOpacity>
+            <View style={styles.headerButtons}>
+              {editBudget && (
+                <TouchableOpacity 
+                  onPress={handleDelete}
+                  style={styles.deleteButton}
+                >
+                  <Ionicons 
+                    name="trash-outline" 
+                    size={24} 
+                    color={isDarkMode ? '#FFFFFF' : '#000000'} 
+                  />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={onClose}>
+                <Ionicons 
+                  name="close" 
+                  size={24} 
+                  color={isDarkMode ? '#FFFFFF' : '#000000'} 
+                />
+              </TouchableOpacity>
+            </View>
           </View>
 
           <ScrollView style={styles.formContainer}>
@@ -281,6 +327,38 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
               </View>
             </View>
 
+            {/* Recurring Budget Option - Only show when not editing */}
+            {!editBudget && (
+              <View style={styles.formGroup}>
+                <View style={styles.recurringContainer}>
+                  <Text 
+                    style={[
+                      styles.label,
+                      { color: isDarkMode ? '#FFFFFF' : '#000000' }
+                    ]}
+                  >
+                    Recurring Budget
+                  </Text>
+                  <Switch
+                    value={isRecurring}
+                    onValueChange={setIsRecurring}
+                    trackColor={{ false: '#767577', true: '#81b0ff' }}
+                    thumbColor={isRecurring ? '#21965B' : '#f4f3f4'}
+                  />
+                </View>
+                {isRecurring && (
+                  <Text 
+                    style={[
+                      styles.recurringInfo,
+                      { color: isDarkMode ? '#B0B0B0' : '#707070' }
+                    ]}
+                  >
+                    This budget will be created for {getMonthName(selectedMonth)} through December {selectedYear}
+                  </Text>
+                )}
+              </View>
+            )}
+
             {/* Save Button */}
             <TouchableOpacity
               style={[styles.saveButton, { backgroundColor: '#21965B' }]}
@@ -416,6 +494,24 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   yearArrow: {
+    padding: 4,
+  },
+  recurringContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  recurringInfo: {
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  deleteButton: {
     padding: 4,
   },
 });

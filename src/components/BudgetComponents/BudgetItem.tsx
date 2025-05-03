@@ -52,7 +52,7 @@ const BudgetItem: React.FC<BudgetItemProps> = ({
           <View 
             style={[
               styles.iconContainer, 
-              { backgroundColor: categoryColor }
+              { borderColor: categoryColor, borderWidth: 2, justifyContent: 'center', alignItems: 'center' }
             ]}
           >
             <Text style={{ color: '#FFFFFF', fontSize: 18 }}>{categoryIcon}</Text> 
