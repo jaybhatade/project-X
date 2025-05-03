@@ -36,6 +36,7 @@ const BudgetListCards: React.FC = () => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isSingleItem, setIsSingleItem] = useState<boolean>(false);
   const screenWidth = Dimensions.get('window').width;
 
   // Load data when component mounts or regains focus
@@ -53,7 +54,7 @@ const BudgetListCards: React.FC = () => {
       // Load categories first since we need them for budget display
       const allCategories = await db.getAllCategories();
       setCategories(allCategories);
-      
+
       // Then load budgets with spending data
       const budgetsWithSpending = await db.getBudgetsWithSpending(userId);
       
@@ -66,6 +67,8 @@ const BudgetListCards: React.FC = () => {
         budget.month === currentMonth && budget.year === currentYear
       );
       
+      // Set state for single item check
+      setIsSingleItem(currentMonthBudgets.length === 1);
       setBudgets(currentMonthBudgets);
     } catch (error) {
       console.error('Error loading budget data:', error);
@@ -97,9 +100,9 @@ const BudgetListCards: React.FC = () => {
   // Render individual budget card
   const renderBudgetCard = ({ item }: { item: Budget }) => {
     const category = getCategoryById(item.categoryId);
-    
+
     if (!category) return null;
-    
+
     return (
       <TouchableOpacity
         onPress={navigateToBudgetScreen}
@@ -107,8 +110,8 @@ const BudgetListCards: React.FC = () => {
           styles.container,
           { 
             backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-            width: screenWidth * 0.8,
-            marginRight: 12
+            width: isSingleItem ? '100%' : screenWidth * 0.8,
+            marginRight: isSingleItem ? 0 : 12
           }
         ]}
       >
@@ -117,7 +120,7 @@ const BudgetListCards: React.FC = () => {
             <View 
               style={[
                 styles.iconContainer, 
-                { backgroundColor: category.color }
+                { borderColor: category.color, borderWidth: 2 }
               ]}
             >
               <Text style={{ color: '#FFFFFF', fontSize: 18 }}>{category.icon}</Text>
@@ -155,9 +158,9 @@ const BudgetListCards: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text style={{ 
+        <Text style={{
           color: isDarkMode ? '#FFFFFF' : '#000000',
-          textAlign: 'center' 
+          textAlign: 'center'
         }}>
           Loading budgets...
         </Text>
@@ -171,14 +174,20 @@ const BudgetListCards: React.FC = () => {
 
   return (
     <View style={styles.listContainer}>
-      <FlatList
-        data={budgets}
-        renderItem={renderBudgetCard}
-        keyExtractor={(item) => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-      />
+      {isSingleItem ? (
+        <View style={styles.singleItemContainer}>
+          {renderBudgetCard({ item: budgets[0] })}
+        </View>
+      ) : (
+        <FlatList
+          data={budgets}
+          renderItem={renderBudgetCard}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
     </View>
   );
 };
@@ -190,6 +199,11 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 16,
+  },
+  singleItemContainer: {
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    width: '100%',
   },
   container: {
     borderRadius: 12,

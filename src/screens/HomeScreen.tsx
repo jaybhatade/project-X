@@ -81,12 +81,14 @@ export default function HomeScreen() {
           {/* Header */}
           <View className="flex-row justify-between items-center px-6 mb-8">
             <View className="flex-row items-center space-x-3">
-              <View className={`w-12 h-12 rounded-full items-center justify-center ${
+              <TouchableOpacity 
+              onPress={() => navigation.navigate('Profile')}
+              className={`w-12 h-12 rounded-full items-center justify-center  ${
                 isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
-              }`}>
+              }`} >
                 <Text className="text-xl font-montserrat-bold text-white">JB</Text>
-              </View>
-              <View>
+              </TouchableOpacity>
+              <View className=''>
                 <Text className="text-sm font-montserrat-medium text-TextSecondary">Welcome back,</Text>
                 <Text className={`text-lg font-montserrat-bold ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
