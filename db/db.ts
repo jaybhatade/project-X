@@ -210,13 +210,8 @@ const migrateDatabase = async () => {
 
 const insertDefaultData = async (userId: string) => {
   try {
-    // Insert default accounts
-    await db.runAsync(`
-      INSERT OR IGNORE INTO accounts (id, userId, name, balance, icon, createdAt, updatedAt)
-      VALUES 
-        ('cash_1', ?, 'Cash', 0, '💵', datetime('now'), datetime('now')),
-        ('bank_1', ?, 'Bank Account', 0, '🏛️', datetime('now'), datetime('now'));
-    `, [userId, userId]);
+    // Note: Initial accounts are now created via the InitialBalanceModal component
+    // instead of being automatically added here.
 
     // Insert default categories
     await db.runAsync(`

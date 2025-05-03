@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, Animated } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
@@ -9,6 +9,10 @@ import { Ionicons } from '@expo/vector-icons';
 import RecentTransactions from '../components/RecentTransactions';
 import BudgetListCards from '../components/BudgetComponents/BudgetListCards';
 import BalanceCard from '../components/BalanceCard';
+import InitialBalanceModal from '../components/InitialBalanceModal';
+import { useDatabase } from '../contexts/DatabaseContext';
+import { useAuth } from '../contexts/AuthContext';
+import * as db from '../../db/db';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'> & {
   navigate: (screen: keyof RootStackParamList) => void;
@@ -17,7 +21,42 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'M
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { isDarkMode } = useTheme();
+  const { isInitialized } = useDatabase();
+  const { user } = useAuth();
   const scrollY = useRef(new Animated.Value(0)).current;
+  const [showInitialBalanceModal, setShowInitialBalanceModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const checkAccounts = useCallback(async () => {
+    if (isInitialized && user) {
+      try {
+        // Check if the user already has any accounts
+        const accounts = await db.getAccounts(user.uid);
+        
+        // If no accounts exist, show the initial balance modal
+        if (accounts.length === 0) {
+          setShowInitialBalanceModal(true);
+        }
+      } catch (error) {
+        console.error('Error checking accounts:', error);
+      }
+    }
+  }, [isInitialized, user]);
+
+  useEffect(() => {
+    checkAccounts();
+  }, [checkAccounts]);
+
+  const handleCloseModal = () => {
+    setShowInitialBalanceModal(false);
+    // Trigger a refresh of components that display account information
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const handleAccountsUpdate = () => {
+    // This function will be called when accounts are updated
+    setRefreshKey(prev => prev + 1);
+  };
 
   const handleLogout = async () => {
     try {
@@ -36,6 +75,7 @@ export default function HomeScreen() {
           { useNativeDriver: true }
         )}
         scrollEventThrottle={16}
+        key={`scroll-${refreshKey}`}
       >
         <View className="pt-12 pb-6">
           {/* Header */}
@@ -106,6 +146,12 @@ export default function HomeScreen() {
       >
         <Ionicons name="add" size={36} color="#FFFFFF" />
       </TouchableOpacity>
+
+      {/* Initial Balance Modal */}
+      <InitialBalanceModal 
+        visible={showInitialBalanceModal} 
+        onClose={handleCloseModal} 
+      />
     </View>
   );
 }

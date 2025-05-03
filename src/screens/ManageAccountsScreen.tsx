@@ -9,7 +9,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons, Octicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import db from '../../db/db';
@@ -30,9 +30,8 @@ export default function ManageAccountsScreen() {
   const userId = user?.uid || '';
   const { isDarkMode } = useTheme();
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentAccount, setCurrentAccount] = useState<Account | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     balance: '',
@@ -48,7 +47,6 @@ export default function ManageAccountsScreen() {
     { icon: '🐷', label: 'Savings' },
     { icon: '👛', label: 'Wallet' },
     { icon: '📈', label: 'Investment' },
-    { icon: '💰', label: 'Loan' },
   ];
 
   const loadAccounts = useCallback(async () => {
@@ -68,7 +66,7 @@ export default function ManageAccountsScreen() {
     loadAccounts();
   }, [loadAccounts]);
 
-  const handleSubmit = async () => {
+  const handleAddAccount = async () => {
     try {
       if (!formData.name.trim()) {
         Alert.alert('Error', 'Please enter an account name');
@@ -81,56 +79,42 @@ export default function ManageAccountsScreen() {
       }
 
       const now = new Date().toISOString();
+      const id = `acc_${Date.now()}`;
 
-      if (isEditing && currentAccount) {
-        await db.runAsync(
-          `UPDATE accounts SET name = ?, balance = ?, icon = ?, updatedAt = ? WHERE id = ? AND userId = ?`,
-          [
-            formData.name,
-            parseFloat(formData.balance),
-            formData.icon,
-            now,
-            currentAccount.id,
-            userId
-          ]
-        );
-      } else {
-        const newAccount: Account = {
-          id: `acc_${Date.now()}`,
-          userId: userId,
-          name: formData.name,
-          balance: parseFloat(formData.balance),
-          icon: formData.icon,
-          createdAt: now,
-          updatedAt: now,
-        };
-
-        await db.runAsync(
-          `INSERT INTO accounts (id, userId, name, balance, icon, createdAt, updatedAt, synced)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            newAccount.id,
-            newAccount.userId,
-            newAccount.name,
-            newAccount.balance,
-            newAccount.icon,
-            newAccount.createdAt,
-            newAccount.updatedAt,
-            0
-          ]
-        );
-      }
+      await db.runAsync(
+        `INSERT INTO accounts (id, userId, name, balance, icon, createdAt, updatedAt, synced)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, userId, formData.name, parseFloat(formData.balance), formData.icon, now, now, 0]
+      );
       
       await loadAccounts();
-      setModalVisible(false);
-      resetForm();
+      closeModal();
     } catch (error) {
-      console.error('Error saving account:', error);
-      Alert.alert('Error', 'Failed to save account');
+      console.error('Error adding account:', error);
+      Alert.alert('Error', 'Failed to add account');
     }
   };
 
-  const handleDelete = async (accountId: string) => {
+  const handleEditAccount = async () => {
+    if (!editingAccount) return;
+
+    try {
+      const now = new Date().toISOString();
+      await db.runAsync(
+        `UPDATE accounts 
+         SET name = ?, balance = ?, icon = ?, updatedAt = ?
+         WHERE id = ?`,
+        [formData.name, parseFloat(formData.balance), formData.icon, now, editingAccount.id]
+      );
+      await loadAccounts();
+      closeModal();
+    } catch (error) {
+      console.error('Error updating account:', error);
+      Alert.alert('Error', 'Failed to update account');
+    }
+  };
+
+  const handleDeleteAccount = async (id: string) => {
     Alert.alert(
       'Delete Account',
       'Are you sure you want to delete this account?',
@@ -141,10 +125,7 @@ export default function ManageAccountsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await db.runAsync(
-                'DELETE FROM accounts WHERE id = ? AND userId = ?', 
-                [accountId, userId]
-              );
+              await db.runAsync('DELETE FROM accounts WHERE id = ?', [id]);
               await loadAccounts();
             } catch (error) {
               console.error('Error deleting account:', error);
@@ -157,32 +138,35 @@ export default function ManageAccountsScreen() {
   };
 
   const resetForm = () => {
-    setFormData({ 
-      name: '', 
-      balance: '', 
+    setFormData({
+      name: '',
+      balance: '',
       icon: '🏛️',
-      color: '#21965B' 
+      color: '#21965B'
     });
-    setIsEditing(false);
-    setCurrentAccount(null);
   };
 
   const openEditModal = (account: Account) => {
-    setIsEditing(true);
-    setCurrentAccount(account);
+    setEditingAccount(account);
     setFormData({
       name: account.name,
       balance: account.balance.toString(),
       icon: account.icon,
       color: '#21965B',
     });
-    setModalVisible(true);
+    setIsModalVisible(true);
   };
 
   const openAddModal = () => {
-    setIsEditing(false);
+    setEditingAccount(null);
     resetForm();
-    setModalVisible(true);
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+    setEditingAccount(null);
+    resetForm();
   };
 
   const renderItem = ({ item }: { item: Account }) => (
@@ -192,7 +176,7 @@ export default function ManageAccountsScreen() {
       <View className="flex-row items-center flex-1">
         <View 
           className="w-12 h-12 rounded-full items-center justify-center mr-4"
-          style={{ backgroundColor: isDarkMode ? '#21965B' : '#21965B' }}
+          style={{ backgroundColor: '#21965B' }}
         >
           <Text className="text-2xl">{item.icon}</Text>
         </View>
@@ -214,61 +198,75 @@ export default function ManageAccountsScreen() {
           onPress={() => openEditModal(item)}
           className="mr-4"
         >
-          <Feather
-            name="edit"
+          <Octicons
+            name="pencil"
             size={24}
             color={isDarkMode ? '#FFFFFF' : '#000000'}
           />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDelete(item.id)}>
+        <TouchableOpacity onPress={() => handleDeleteAccount(item.id)}>
           <Ionicons
             name="trash-outline"
             size={24}
-            color="#000000"
+            color={isDarkMode ? '#FFFFFF' : '#000000'}
           />
         </TouchableOpacity>
       </View>
     </View>
   );
 
+  const EmptyListComponent = () => (
+    <View className="flex-1 items-center justify-center">
+      <Ionicons
+        name="wallet-outline"
+        size={80}
+        color={isDarkMode ? '#666666' : '#999999'}
+      />
+      <Text className={`mt-4 text-lg font-montserrat-medium text-center ${
+        isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+      }`}>
+        No accounts yet
+      </Text>
+      <Text className={`mt-2 text-sm font-montserrat text-center ${
+        isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
+      }`}>
+        Add an account to get started
+      </Text>
+    </View>
+  );
+
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}>
-      <View className="px-6 pt-12 pb-6">
-        <Text className={`text-2xl font-montserrat-bold mb-6 ${
-          isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-        }`}>
-          Manage Accounts
-        </Text>
-
-        <TouchableOpacity
-          onPress={openAddModal}
-          className={`p-4 rounded-xl mb-6 flex-row items-center justify-center ${
-            isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
-          }`}
-        >
-          <Ionicons name="add" size={24} color="#FFFFFF" />
-          <Text className="text-white font-montserrat-semibold ml-2">
-            Add New Account
-          </Text>
-        </TouchableOpacity>
-
+      <View className="px-6 pt-12 pb-6 flex-1">
         <FlatList
           data={accounts}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={EmptyListComponent}
+          contentContainerStyle={{ flexGrow: 1 }}
         />
       </View>
 
+      <TouchableOpacity
+        onPress={openAddModal}
+        className={`absolute bottom-8 right-8 w-14 h-14 rounded-full items-center justify-center ${
+          isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
+        }`}
+        style={{ elevation: 5 }}
+      >
+        <Ionicons name="add" size={30} color="#FFFFFF" />
+      </TouchableOpacity>
+
       <Modal
-        visible={modalVisible}
+        visible={isModalVisible}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={closeModal}
       >
         <TouchableOpacity 
           activeOpacity={1} 
-          onPress={() => setModalVisible(false)}
+          onPress={closeModal}
           className="flex-1 justify-end bg-black/50"
         >
           <TouchableOpacity 
@@ -285,7 +283,7 @@ export default function ManageAccountsScreen() {
               <Text className={`text-xl font-montserrat-bold mb-6 ${
                 isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
               }`}>
-                {isEditing ? 'Edit Account' : 'Add New Account'}
+                {editingAccount ? 'Edit Account' : 'Add New Account'}
               </Text>
 
               <View className="flex-row items-center mb-6">
@@ -368,7 +366,7 @@ export default function ManageAccountsScreen() {
 
               <View className="flex-row justify-between mb-4">
                 <TouchableOpacity
-                  onPress={() => setModalVisible(false)}
+                  onPress={closeModal}
                   className={`p-4 rounded-lg flex-1 mr-2 ${
                     isDarkMode ? 'bg-BackgroundDark' : 'bg-white'
                   }`}
@@ -380,13 +378,13 @@ export default function ManageAccountsScreen() {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={handleSubmit}
+                  onPress={editingAccount ? handleEditAccount : handleAddAccount}
                   className={`p-4 rounded-lg flex-1 ml-2 ${
                     isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
                   }`}
                 >
                   <Text className="text-white text-center font-montserrat-semibold">
-                    {isEditing ? 'Update' : 'Add'}
+                    {editingAccount ? 'Update' : 'Add'}
                   </Text>
                 </TouchableOpacity>
               </View>

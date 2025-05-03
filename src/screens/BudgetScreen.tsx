@@ -225,7 +225,7 @@ export default function BudgetScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
-          Budgets
+          Budget & Goals
         </Text>
       </View>
 
