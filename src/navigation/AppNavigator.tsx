@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import SignupScreen from '../screens/Auth/SignupScreen';
+import UserFormScreen from '../screens/Auth/UserFormScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import ManageCategoriesScreen from '../screens/ManageCategoriesScreen';
 import ManageAccountsScreen from '../screens/ManageAccountsScreen';
@@ -36,7 +37,7 @@ const MyDarkTheme = {
 };
 
 export default function AppNavigator() {
-  const { user, loading } = useAuth();
+  const { user, loading, hasCompletedUserForm } = useAuth();
   const { isDarkMode } = useTheme(); // Get theme state
 
   if (loading) {
@@ -68,6 +69,13 @@ export default function AppNavigator() {
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Signup" component={SignupScreen} />
           </>
+        ) : !hasCompletedUserForm ? (
+          // User Form Screen
+          <Stack.Screen 
+            name="UserForm"
+            component={UserFormScreen}
+            options={{ gestureEnabled: false }}
+          />
         ) : (
           // App Stack
           <>

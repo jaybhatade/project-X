@@ -9,7 +9,6 @@ import { Ionicons } from '@expo/vector-icons';
 import RecentTransactions from '../components/RecentTransactions';
 import BudgetListCards from '../components/BudgetComponents/BudgetListCards';
 import BalanceCard from '../components/BalanceCard';
-import InitialBalanceModal from '../components/InitialBalanceModal';
 import { useDatabase } from '../contexts/DatabaseContext';
 import { useAuth } from '../contexts/AuthContext';
 import * as db from '../../db/db';
@@ -24,46 +23,35 @@ export default function HomeScreen() {
   const { isInitialized } = useDatabase();
   const { user } = useAuth();
   const scrollY = useRef(new Animated.Value(0)).current;
-  const [showInitialBalanceModal, setShowInitialBalanceModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  const checkAccounts = useCallback(async () => {
-    if (isInitialized && user) {
-      try {
-        // Check if the user already has any accounts
-        const accounts = await db.getAccounts(user.uid);
-        
-        // If no accounts exist, show the initial balance modal
-        if (accounts.length === 0) {
-          setShowInitialBalanceModal(true);
-        }
-      } catch (error) {
-        console.error('Error checking accounts:', error);
-      }
-    }
-  }, [isInitialized, user]);
+  const [userDetails, setUserDetails] = useState<{firstName: string, lastName: string} | null>(null);
 
   useEffect(() => {
-    checkAccounts();
-  }, [checkAccounts]);
+    const fetchUserDetails = async () => {
+      if (user) {
+        const dbUser = await db.getUserByUserId(user.uid);
+        if (dbUser) {
+          setUserDetails({
+            firstName: dbUser.firstName,
+            lastName: dbUser.lastName
+          });
+        }
+      }
+    };
 
-  const handleCloseModal = () => {
-    setShowInitialBalanceModal(false);
-    // Trigger a refresh of components that display account information
-    setRefreshKey(prev => prev + 1);
-  };
+    fetchUserDetails();
+  }, [user]);
 
   const handleAccountsUpdate = () => {
     // This function will be called when accounts are updated
     setRefreshKey(prev => prev + 1);
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to logout. Please try again.');
+  const getInitials = () => {
+    if (userDetails) {
+      return `${userDetails.firstName[0]}${userDetails.lastName[0]}`;
     }
+    return '';
   };
 
   return (
@@ -77,7 +65,7 @@ export default function HomeScreen() {
         scrollEventThrottle={16}
         key={`scroll-${refreshKey}`}
       >
-        <View className="pt-12 pb-6">
+        <View className="pt-14 pb-6">
           {/* Header */}
           <View className="flex-row justify-between items-center px-6 mb-8">
             <View className="flex-row items-center space-x-3">
@@ -86,20 +74,18 @@ export default function HomeScreen() {
               className={`w-12 h-12 rounded-full items-center justify-center  ${
                 isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
               }`} >
-                <Text className="text-xl font-montserrat-bold text-white">JB</Text>
+                <Text className="text-xl font-montserrat-bold text-white">{getInitials()}</Text>
               </TouchableOpacity>
-              <View className=''>
-                <Text className="text-sm font-montserrat-medium text-TextSecondary">Welcome back,</Text>
+              <View className='ml-[8px]'>
+                <Text className="text-base font-montserrat-medium text-TextSecondary">Welcome back,</Text>
                 <Text className={`text-lg font-montserrat-bold ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-                }`}>Jay Bhatade</Text>
+                }`}>{userDetails ? `${userDetails.firstName} ${userDetails.lastName}` : ''}</Text>
               </View>
             </View>
             <TouchableOpacity
               onPress={() => navigation.navigate('Notifications')}
-              className={`w-12 h-12 rounded-full items-center justify-center ${
-                isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
-              }`}
+              className={`w-12 h-12 rounded-full items-center justify-center `}
             >
               <Ionicons name="notifications-outline" size={24} color={isDarkMode ? '#FFFFFF' : '#000000'} />
             </TouchableOpacity>
@@ -114,10 +100,10 @@ export default function HomeScreen() {
               <Text className={`text-lg font-montserrat-semibold ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
             }`}>
-              Budget Overview
+              Budget
             </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Budget')}>
-                <Text className="text-sm font-montserrat-medium text-Primary">
+                <Text className="text-lg font-montserrat-medium text-Primary">
                   view all
                 </Text>
               </TouchableOpacity>
@@ -148,12 +134,6 @@ export default function HomeScreen() {
       >
         <Ionicons name="add" size={36} color="#FFFFFF" />
       </TouchableOpacity>
-
-      {/* Initial Balance Modal */}
-      <InitialBalanceModal 
-        visible={showInitialBalanceModal} 
-        onClose={handleCloseModal} 
-      />
     </View>
   );
 }

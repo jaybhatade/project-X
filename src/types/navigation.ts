@@ -4,6 +4,7 @@ export type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
   Register: undefined;
+  UserForm: undefined;
   AddTransaction: undefined;
   AllTransactions: undefined;
   Notifications: undefined;

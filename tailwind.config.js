@@ -28,7 +28,7 @@ module.exports = {
         // Dark Theme Colors
         PrimaryDark: '#21965B',
         SecondaryDark: 'rgb(25, 110, 68)',
-        BackgroundDark: '#121212',
+        BackgroundDark: '#000000',
         SurfaceDark: '#1E1E1E',
         OnPrimaryDark: '#000000',
         OnSecondaryDark: '#000000',

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { getAllTransactions } from '../../db/db';
 import { useAuth } from '../contexts/AuthContext';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
@@ -25,15 +26,15 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
 
   const fetchTransactionSummary = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       const transactions = await getAllTransactions();
-      
+
       // Get current month's start and end dates
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      
+
       // Filter transactions for current month
       const currentMonthTransactions = transactions.filter(transaction => {
         const transactionDate = new Date(transaction.date);
@@ -44,7 +45,7 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
       const income = currentMonthTransactions
         .filter(t => t.type === 'income')
         .reduce((sum, t) => sum + t.amount, 0);
-      
+
       const expenses = currentMonthTransactions
         .filter(t => t.type === 'expense')
         .reduce((sum, t) => sum + t.amount, 0);
@@ -52,10 +53,10 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
       setMonthlyIncome(income);
       setMonthlyExpenses(expenses);
       setNetBalance(income - expenses);
-      
+
       // Set current month name
       setCurrentMonth(now.toLocaleString('default', { month: 'long' }));
-      
+
       if (onAccountsUpdate) {
         onAccountsUpdate();
       }
@@ -82,7 +83,7 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
   };
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       onPress={() => navigation.navigate('ManageAccounts')}
       className={`p-6 rounded-xl mx-6 mb-8 bg-PrimaryDark ${
         isDarkMode ? 'bg-SurfaceDark' : 'bg-SecondaryDark'
@@ -90,29 +91,35 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
       activeOpacity={0.7}
     >
       <View className="flex-row justify-between items-start">
-        <View className='flex-col justify-between'>
-        <View className=''>
-          <Text className="text-white font-montserrat-medium text-lg ">
-            Balance
-          </Text>
-          <Text className="text-white font-montserrat-bold text-4xl mb-1">
-            {formatCurrency(netBalance)}
-          </Text>
+        <View>
+          <View className="mb-4">
+            <Text className="text-white font-montserrat-medium text-lg ">
+              Balance
+            </Text>
+            <Text className="text-white font-montserrat-bold text-4xl mb-1">
+              {formatCurrency(netBalance)}
+            </Text>
           </View>
-          <Text className="text-white font-montserrat-medium text-lg ">
-            {currentMonth}
-          </Text>
+          <View>
+            <View className="flex-row items-center">
+              <Ionicons name="calendar-outline" size={20} color="#fff" style={{ marginRight: 6 }} />
+              <Text className="text-white font-montserrat-medium text-lg ">
+                {currentMonth}
+              </Text>
+            </View>
+          </View>
         </View>
+
         <View>
           <View className="mb-4">
             <Text className="text-white font-montserrat-medium text-base">Income</Text>
-            <Text className="text-white font-montserrat-semibold text-xl">
+            <Text className="text-PrimaryDark font-montserrat-semibold text-xl">
               {formatCurrency(monthlyIncome)}
             </Text>
           </View>
           <View>
-            <Text className="text-white font-montserrat-medium text-base">Expenses</Text>
-            <Text className="text-white font-montserrat-semibold text-xl">
+            <Text className="text-white font-montserrat-medium text-base">Expense</Text>
+            <Text className="text-red-500 font-montserrat-semibold text-xl">
               {formatCurrency(monthlyExpenses)}
             </Text>
           </View>
@@ -120,4 +127,4 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
       </View>
     </TouchableOpacity>
   );
-} 
+}

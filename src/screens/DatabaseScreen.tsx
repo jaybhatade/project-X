@@ -7,7 +7,8 @@ import {
   getAllBudgets, 
   getAllCategories,
   getAllSubscriptions,
-  getAllGoals
+  getAllGoals,
+  getAllUsers
 } from '../../db/db';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -18,6 +19,7 @@ interface DatabaseData {
   categories: any[];
   subscriptions: any[];
   goals: any[];
+  users: any[];
 }
 
 export default function DatabaseScreen() {
@@ -29,7 +31,8 @@ export default function DatabaseScreen() {
     budgets: [],
     categories: [],
     subscriptions: [],
-    goals: []
+    goals: [],
+    users: []
   });
   const [activeTab, setActiveTab] = useState('transactions');
 
@@ -43,6 +46,7 @@ export default function DatabaseScreen() {
         const categories = await getAllCategories();
         const subscriptions = await getAllSubscriptions();
         const goals = await getAllGoals();
+        const users = await getAllUsers();
 
         setData({
           transactions,
@@ -50,7 +54,8 @@ export default function DatabaseScreen() {
           budgets,
           categories,
           subscriptions,
-          goals
+          goals,
+          users
         });
       } catch (error) {
         console.error('Error fetching database data:', error);
@@ -71,13 +76,15 @@ export default function DatabaseScreen() {
       const categories = await getAllCategories();
       const subscriptions = await getAllSubscriptions();
       const goals = await getAllGoals();
+      const users = await getAllUsers();
       setData({
         transactions,
         accounts,
         budgets,
         categories,
         subscriptions,
-        goals
+        goals,
+        users
       });
     } catch (error) {
       console.error('Error refreshing database data:', error);
@@ -94,6 +101,7 @@ export default function DatabaseScreen() {
       { id: 'budgets', label: 'Budgets' },
       { id: 'subscriptions', label: 'Subscriptions' },
       { id: 'goals', label: 'Goals' },
+      { id: 'users', label: 'Users' },
     ];
 
     return (

@@ -1,5 +1,17 @@
 import * as SQLite from 'expo-sqlite';
 
+// Add User interface
+interface User {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  createdAt: string;
+  updatedAt: string;
+  synced: number;
+}
+
 interface Transaction {
   id: string;
   userId: string;
@@ -83,6 +95,17 @@ export const setupDatabase = async (userId: string) => {
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS ${INIT_TABLE_NAME} (
         initialized INTEGER DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY NOT NULL,
+        userId TEXT,
+        firstName TEXT,
+        lastName TEXT,
+        phoneNumber TEXT,
+        createdAt TEXT,
+        updatedAt TEXT,
+        synced INTEGER DEFAULT 0
       );
 
       CREATE TABLE IF NOT EXISTS transactions (
@@ -623,6 +646,82 @@ export const getGoalById = async (goalId: string) => {
     return goal;
   } catch (error) {
     console.error('Error getting goal:', error);
+    throw error;
+  }
+};
+
+// User-specific functions
+export const addUser = async (user: User) => {
+  try {
+    await db.runAsync(
+      `INSERT INTO users (id, userId, firstName, lastName, phoneNumber, createdAt, updatedAt, synced)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        user.id,
+        user.userId,
+        user.firstName,
+        user.lastName,
+        user.phoneNumber,
+        user.createdAt,
+        user.updatedAt,
+        0
+      ]
+    );
+  } catch (error) {
+    console.error('Error adding user:', error);
+    throw error;
+  }
+};
+
+export const getUserByUserId = async (userId: string) => {
+  try {
+    const user = await db.getFirstAsync<User>(
+      `SELECT * FROM users WHERE userId = ?`,
+      [userId]
+    );
+    return user;
+  } catch (error) {
+    console.error('Error getting user:', error);
+    throw error;
+  }
+};
+
+export const updateUser = async (user: User) => {
+  try {
+    await db.runAsync(
+      `UPDATE users 
+       SET firstName = ?, lastName = ?, phoneNumber = ?, updatedAt = ?, synced = 0
+       WHERE userId = ?`,
+      [
+        user.firstName,
+        user.lastName,
+        user.phoneNumber,
+        new Date().toISOString(),
+        user.userId
+      ]
+    );
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+};
+
+export const getAllUsers = async (): Promise<User[]> => getAllDataFromTable<User>('users');
+
+export const clearDatabase = async () => {
+  try {
+    await db.execAsync(`
+      DELETE FROM transactions;
+      DELETE FROM accounts;
+      DELETE FROM budgets;
+      DELETE FROM subscriptions;
+      DELETE FROM categories;
+      DELETE FROM goals;
+      DELETE FROM users;
+      DELETE FROM ${INIT_TABLE_NAME};
+    `);
+  } catch (error) {
+    console.error('Error clearing database:', error);
     throw error;
   }
 };
