@@ -15,8 +15,7 @@ interface Transaction {
   accountId: string;
   date: string;
   notes?: string;
-  transferFrom?: string;
-  transferTo?: string;
+  linkedTransactionId?: string;
 }
 
 interface Account {
@@ -47,7 +46,7 @@ export default function RecentTransactions() {
     try {
       // Get all transactions
       const transactionsData = await getAllTransactions();
-      // Sort by date in descending order and take only the first 4
+      // Sort by date in descending order and take only the first 3
       const recentTransactions = transactionsData
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 3);
@@ -105,24 +104,33 @@ export default function RecentTransactions() {
   const renderTransaction = ({ item }: { item: Transaction }) => {
     const account = accounts[item.accountId];
     const category = categories[item.categoryId];
-    const transferToAccount = item.transferTo ? accounts[item.transferTo] : null;
+    
+    // Check if this is a transfer transaction (debit or credit)
+    const isTransfer = item.type === 'debit' || item.type === 'credit';
+    
+    // Find linked transaction for transfers
+    const linkedTransaction = isTransfer && item.linkedTransactionId 
+      ? transactions.find(t => t.id === item.linkedTransactionId) 
+      : null;
+    
+    const linkedAccount = linkedTransaction ? accounts[linkedTransaction.accountId] : null;
 
     const getAmountColor = () => {
-      if (item.type === 'transfer') return '#21965B'; // Green for transfers
+      if (item.type === 'debit') return '#FF3B30'; // Red for outgoing transfer
+      if (item.type === 'credit') return '#21965B'; // Green for incoming transfer
       return item.type === 'expense' ? '#FF3B30' : '#21965B'; // Red for expenses, Green for income
     };
 
     const getTransactionTitle = () => {
-      if (item.type === 'transfer') {
-        return `Transfer to ${transferToAccount?.name || 'Unknown Account'}`;
+      if (item.type === 'debit') {
+        return `Transfer to ${linkedAccount?.name || 'Unknown Account'}`;
+      } else if (item.type === 'credit') {
+        return `Transfer from ${linkedAccount?.name || 'Unknown Account'}`;
       }
       return category?.name || 'Unknown Category';
     };
 
     const getTransactionSubtitle = () => {
-      if (item.type === 'transfer') {
-        return `From ${account?.name || 'Unknown Account'}`;
-      }
       return `${account?.name || 'Unknown Account'} • ${formatDate(item.date)}`;
     };
 
@@ -136,10 +144,10 @@ export default function RecentTransactions() {
         <View className="flex-row items-center">
           <View 
             className={`w-10 h-10 rounded-full items-center justify-center mr-3 border-2`}
-            style={{ borderColor: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}
+            style={{ borderColor: isTransfer ? '#9B59B6' : (category?.color || '#21965B') }}
           >
-            <Text style={{ color: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}>
-              {item.type === 'transfer' ? '↔️' : (category?.icon || '💰')}
+            <Text style={{ color: isTransfer ? '#9B59B6' : (category?.color || '#21965B') }}>
+              {isTransfer ? '↔️' : (category?.icon || '💰')}
             </Text>
           </View>
           <View>
@@ -156,14 +164,14 @@ export default function RecentTransactions() {
           </View>
         </View>
         <Text className={`font-montserrat-semibold`} style={{ color: getAmountColor() }}>
-          {item.type === 'transfer' ? '→' : (item.type === 'expense' ? '-' : '+')}₹{item.amount.toLocaleString()}
+          {item.type === 'debit' || item.type === 'expense' ? '-' : '+'}₹{item.amount.toLocaleString()}
         </Text>
       </TouchableOpacity>
     );
   };
 
   return (
-    <View className="mb-8 px-6">
+    <View className=" px-6">
       <View className="flex-row justify-between items-center mb-4">
         <Text className={`text-lg font-montserrat-semibold ${
           isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
@@ -174,7 +182,7 @@ export default function RecentTransactions() {
           <Text className={`font-montserrat-medium ${
             isDarkMode ? 'text-PrimaryDark' : 'text-Primary'
           }`}>
-            See All
+            View All
           </Text>
         </TouchableOpacity>
       </View>

@@ -24,7 +24,7 @@ export const chatTheme = {
     primary: '#21965B', // Keep brand color consistent
     primaryLight: '#1A332A', // Darker shade for dark mode
     primaryDark: '#27B36E', // Brighter for dark mode
-    background: '#121212',
+    background: '#000000',
     card: '#1E1E1E',
     surface: '#262626',
     text: '#ECEDEE', // Light text for dark mode

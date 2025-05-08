@@ -13,7 +13,7 @@ export default function OnboardingScreen() {
 
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}>
-      <View className="flex-1 justify-center items-ce nter px-6">
+      <View className="flex-1 justify-center items-center px-6">
         <Image
           source={require('../../assets/images/money-bag.png')}
           className="w-48 h-48 mb-8"

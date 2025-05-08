@@ -94,6 +94,11 @@ export default function HomeScreen() {
           {/* Balance Card */}
           <BalanceCard />
 
+              {/* Recent Transactions */}
+              <View className="mb-8">
+                <RecentTransactions />
+              </View>
+            </View>
           {/* Budget Overview */}
           <View className="mb-8">
             <View className="flex-row justify-between items-center px-6 mb-4">
@@ -111,11 +116,6 @@ export default function HomeScreen() {
             <BudgetListCards />
           </View>
 
-          {/* Recent Transactions */}
-          <View className="mb-8">
-            <RecentTransactions />
-          </View>
-        </View>
       </Animated.ScrollView>
 
       {/* Floating Action Button */}

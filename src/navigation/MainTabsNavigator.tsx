@@ -16,7 +16,7 @@ export default function MainTabsNavigator() {
   const { isDarkMode } = useTheme();
 
   return (
-    <View className={`flex-1 ${isDarkMode ? 'bg-[#121212]' : 'bg-white'}`}>
+    <View className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
@@ -77,7 +77,7 @@ export default function MainTabsNavigator() {
           component={ProfileScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="person-outline" size={size} color={color} />
+              <Ionicons name="grid-outline" size={size} color={color} />
             ),
           }}
         />

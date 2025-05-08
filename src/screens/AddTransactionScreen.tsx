@@ -129,40 +129,75 @@ const AddTransactionScreen = () => {
     }
 
     try {
-      const transaction = {
-        id: `trans_${Date.now()}`,
-        userId,
-        type,
-        categoryId: type === 'transfer' ? 'transfer_1' : categoryId,
-        amount: parseFloat(amount),
-        accountId: type === 'transfer' ? fromAccountId : accountId,
-        date: date.toISOString(),
-        notes: note,
-        transfer: type === 'transfer' ? {
-          fromAccountId,
-          toAccountId,
-        } : undefined,
-      };
-
-      await db.runAsync(
-        `INSERT INTO transactions (id, userId, type, categoryId, amount, accountId, date, notes, transferFrom, transferTo, synced)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
-        [
-          transaction.id,
-          transaction.userId,
-          transaction.type,
-          transaction.categoryId,
-          transaction.amount,
-          transaction.accountId,
-          transaction.date,
-          transaction.notes,
-          transaction.transfer?.fromAccountId || null,
-          transaction.transfer?.toAccountId || null,
-        ]
-      );
-
-      // Update account balances
       if (type === 'transfer') {
+        // For transfers, create two transactions - one debit and one credit
+        const transferCategory = categories.find(cat => cat.id === 'transfer_1');
+        
+        // Create debit transaction (money leaving the source account)
+        const debitTransactionId = `trans_debit_${Date.now()}`;
+        const debitTransaction = {
+          id: debitTransactionId,
+          userId,
+          type: 'debit',  // Changed from 'transfer' to 'debit'
+          categoryId: transferCategory?.id || 'transfer_1',
+          amount: parseFloat(amount),
+          accountId: fromAccountId,
+          date: date.toISOString(),
+          notes: note
+        };
+        
+        // Create credit transaction (money entering the destination account)
+        const creditTransactionId = `trans_credit_${Date.now()}`;
+        const creditTransaction = {
+          id: creditTransactionId,
+          userId,
+          type: 'credit',  // Use 'credit' type for destination account
+          categoryId: transferCategory?.id || 'transfer_1',
+          amount: parseFloat(amount),
+          accountId: toAccountId,
+          date: date.toISOString(),
+          notes: note,
+          linkedTransactionId: debitTransactionId  // Link to the debit transaction
+        };
+        
+        // Update debit transaction with reference to credit transaction
+        debitTransaction.linkedTransactionId = creditTransactionId;
+        
+        // Insert the debit transaction
+        await db.runAsync(
+          `INSERT INTO transactions (id, userId, type, categoryId, amount, accountId, date, notes, linkedTransactionId, synced)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+          [
+            debitTransaction.id,
+            debitTransaction.userId,
+            debitTransaction.type,
+            debitTransaction.categoryId,
+            debitTransaction.amount,
+            debitTransaction.accountId,
+            debitTransaction.date,
+            debitTransaction.notes || "",
+            debitTransaction.linkedTransactionId
+          ]
+        );
+        
+        // Insert the credit transaction
+        await db.runAsync(
+          `INSERT INTO transactions (id, userId, type, categoryId, amount, accountId, date, notes, linkedTransactionId, synced)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+          [
+            creditTransaction.id,
+            creditTransaction.userId,
+            creditTransaction.type,
+            creditTransaction.categoryId,
+            creditTransaction.amount,
+            creditTransaction.accountId,
+            creditTransaction.date,
+            creditTransaction.notes || "",
+            creditTransaction.linkedTransactionId
+          ]
+        );
+
+        // Update account balances
         await db.runAsync(
           `UPDATE accounts SET balance = balance - ? WHERE id = ?`,
           [parseFloat(amount), fromAccountId]
@@ -172,6 +207,35 @@ const AddTransactionScreen = () => {
           [parseFloat(amount), toAccountId]
         );
       } else {
+        // For regular transactions (expense or income)
+        const transaction = {
+          id: `trans_${Date.now()}`,
+          userId,
+          type,
+          categoryId,
+          amount: parseFloat(amount),
+          accountId,
+          date: date.toISOString(),
+          notes: note
+        };
+
+        await db.runAsync(
+          `INSERT INTO transactions (id, userId, type, categoryId, amount, accountId, date, notes, linkedTransactionId, synced)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+          [
+            transaction.id,
+            transaction.userId,
+            transaction.type,
+            transaction.categoryId,
+            transaction.amount,
+            transaction.accountId,
+            transaction.date,
+            transaction.notes || "",
+            null
+          ]
+        );
+
+        // Update account balance
         const amountValue = type === 'expense' ? -parseFloat(amount) : parseFloat(amount);
         await db.runAsync(
           `UPDATE accounts SET balance = balance + ? WHERE id = ?`,
@@ -277,7 +341,7 @@ const AddTransactionScreen = () => {
   });
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#F5F5F5' }]}>
+    <ScrollView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#F5F5F5' }]}>
       <Modal
         visible={showCategoryModal}
         animationType="slide"

@@ -21,10 +21,7 @@ interface Transaction {
   accountId: string;
   date: string;
   notes?: string;
-  transfer?: {
-    fromAccountId?: string;
-    toAccountId?: string;
-  };
+  linkedTransactionId?: string;
 }
 
 interface Account {
@@ -117,8 +114,7 @@ export const setupDatabase = async (userId: string) => {
         accountId TEXT,
         date TEXT,
         notes TEXT,
-        transferFrom TEXT,
-        transferTo TEXT,
+        linkedTransactionId TEXT,
         synced INTEGER DEFAULT 0
       );
 
@@ -225,6 +221,88 @@ const migrateDatabase = async () => {
         "ALTER TABLE budgets ADD COLUMN budgetLimit REAL DEFAULT 0;"
       );
     }
+    
+    // Check if we need to migrate the transactions table
+    const transactionColumns = await db.getAllAsync(
+      "PRAGMA table_info(transactions);"
+    );
+    
+    const linkedTransactionIdExists = transactionColumns.some(
+      (column: any) => column.name === 'linkedTransactionId'
+    );
+    
+    const transferFromExists = transactionColumns.some(
+      (column: any) => column.name === 'transferFrom'
+    );
+    
+    const transferToExists = transactionColumns.some(
+      (column: any) => column.name === 'transferTo'
+    );
+    
+    // Add linkedTransactionId if it doesn't exist
+    if (!linkedTransactionIdExists) {
+      console.log('Adding linkedTransactionId column to transactions table');
+      await db.execAsync(
+        "ALTER TABLE transactions ADD COLUMN linkedTransactionId TEXT;"
+      );
+      
+      // If the old columns exist, migrate data from them
+      if (transferFromExists && transferToExists) {
+        console.log('Migrating transfer transactions data');
+        
+        // Get all transfer transactions
+        const transferTransactions = await db.getAllAsync(`
+          SELECT * FROM transactions
+          WHERE type = 'transfer' AND (transferFrom IS NOT NULL OR transferTo IS NOT NULL)
+        `);
+        
+        // For each transfer transaction, create a linked transaction with type credit
+        for (const transaction of transferTransactions) {
+          if (transaction.transferFrom && transaction.transferTo) {
+            // Create a new transaction for the "to" account
+            const creditTransactionId = `trans_credit_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+            
+            // Insert credit transaction
+            await db.runAsync(`
+              INSERT INTO transactions (
+                id, userId, type, categoryId, amount, accountId, date, notes, linkedTransactionId, synced
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+            `, [
+              creditTransactionId,
+              transaction.userId,
+              'credit',
+              transaction.categoryId,
+              transaction.amount,
+              transaction.transferTo,
+              transaction.date,
+              transaction.notes || '',
+              transaction.id
+            ]);
+            
+            // Update original transaction to be a debit transaction and link it to the credit transaction
+            await db.runAsync(`
+              UPDATE transactions 
+              SET type = 'debit', linkedTransactionId = ?
+              WHERE id = ?
+            `, [creditTransactionId, transaction.id]);
+          }
+        }
+      }
+    }
+    
+    // Remove old columns if they exist but only after migration
+    if (transferFromExists || transferToExists) {
+      // In SQLite, we need to recreate the table to remove columns
+      // This is a simplified approach - in a production app you might handle this differently
+      console.log('Cleaning up old transfer columns');
+      
+      // We'll only do this if we've successfully migrated the data
+      if (linkedTransactionIdExists) {
+        // We don't actually remove the columns as SQLite doesn't support DROP COLUMN
+        // Instead, we'll just stop using them
+        console.log('Transfer columns will be ignored going forward');
+      }
+    }
   } catch (error) {
     console.error('Error migrating database:', error);
     throw error;
@@ -257,12 +335,18 @@ const insertDefaultData = async (userId: string) => {
 export const addTransaction = async (transaction: Transaction) => {
   try {
     await db.runAsync(
-      `INSERT INTO transactions (id, userId, type, categoryId, amount, accountId, date, notes, transferFrom, transferTo, synced) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO transactions (id, userId, type, categoryId, amount, accountId, date, notes, linkedTransactionId, synced)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
       [
-        transaction.id, transaction.userId, transaction.type,
-        transaction.categoryId, transaction.amount, transaction.accountId,
-        transaction.date, transaction.notes || "", transaction.transfer?.fromAccountId || null,
-        transaction.transfer?.toAccountId || null, 0
+        transaction.id,
+        transaction.userId,
+        transaction.type,
+        transaction.categoryId,
+        transaction.amount,
+        transaction.accountId,
+        transaction.date,
+        transaction.notes || "",
+        transaction.linkedTransactionId || null
       ]
     );
   } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, TextInput, Modal, Alert, RefreshControl } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { getAllTransactions, getAllAccounts, getAllCategories, deleteTransaction, updateAccount } from '../../db/db';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,8 +13,7 @@ interface Transaction {
   accountId: string;
   date: string;
   notes?: string;
-  transferFrom?: string;
-  transferTo?: string;
+  linkedTransactionId?: string;
 }
 
 interface Account {
@@ -46,6 +45,7 @@ export default function AllTransactionsScreen() {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -79,6 +79,12 @@ export default function AllTransactionsScreen() {
     }
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString([], { 
@@ -94,37 +100,78 @@ export default function AllTransactionsScreen() {
       accounts[transaction.accountId]?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       transaction.notes?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesFilter = filterType === 'all' || transaction.type === filterType;
+    const matchesFilter = filterType === 'all' || 
+      (filterType === 'transfer' && (transaction.type === 'debit' || transaction.type === 'credit')) ||
+      transaction.type === filterType;
 
     return matchesSearch && matchesFilter;
   });
 
   const handleDeleteTransaction = async (transaction: Transaction) => {
     try {
-      // Update account balances based on transaction type
-      if (transaction.type === 'transfer') {
-        // For transfers, reverse the balance changes
-        const fromAccount = accounts[transaction.accountId];
-        await updateAccount({
-          ...fromAccount,
-          balance: fromAccount.balance + transaction.amount,
-          updatedAt: new Date().toISOString()
-        });
-        if (transaction.transferTo) {
-          const toAccount = accounts[transaction.transferTo];
-          await updateAccount({
-            ...toAccount,
-            balance: toAccount.balance - transaction.amount,
-            updatedAt: new Date().toISOString()
-          });
+      // Check if this is part of a transfer (either debit or credit)
+      const isTransferTransaction = transaction.type === 'debit' || transaction.type === 'credit';
+      
+      if (isTransferTransaction && transaction.linkedTransactionId) {
+        // Find the linked transaction
+        const linkedTransaction = transactions.find(t => t.id === transaction.linkedTransactionId);
+        
+        if (linkedTransaction) {
+          // Delete the linked transaction
+          await deleteTransaction(linkedTransaction.id);
+          
+          // Reverse the account balance change for the linked transaction
+          if (linkedTransaction.type === 'debit') {
+            // Add the money back to the source account
+            const fromAccount = accounts[linkedTransaction.accountId];
+            await updateAccount({
+              ...fromAccount,
+              balance: fromAccount.balance + linkedTransaction.amount,
+              updatedAt: new Date().toISOString()
+            });
+          } else if (linkedTransaction.type === 'credit') {
+            // Remove the money from the destination account
+            const toAccount = accounts[linkedTransaction.accountId];
+            await updateAccount({
+              ...toAccount,
+              balance: toAccount.balance - linkedTransaction.amount,
+              updatedAt: new Date().toISOString()
+            });
+          }
         }
-      } else {
-        // For expenses and income, reverse the balance change
-        const amountValue = transaction.type === 'expense' ? transaction.amount : -transaction.amount;
+      }
+      
+      // Update account balances based on transaction type
+      if (transaction.type === 'debit') {
+        // For debit (money leaving the account), add the money back
         const account = accounts[transaction.accountId];
         await updateAccount({
           ...account,
-          balance: account.balance + amountValue,
+          balance: account.balance + transaction.amount,
+          updatedAt: new Date().toISOString()
+        });
+      } else if (transaction.type === 'credit') {
+        // For credit (money coming into the account), remove the money
+        const account = accounts[transaction.accountId];
+        await updateAccount({
+          ...account,
+          balance: account.balance - transaction.amount,
+          updatedAt: new Date().toISOString()
+        });
+      } else if (transaction.type === 'expense') {
+        // For expenses, add the money back
+        const account = accounts[transaction.accountId];
+        await updateAccount({
+          ...account,
+          balance: account.balance + transaction.amount,
+          updatedAt: new Date().toISOString()
+        });
+      } else if (transaction.type === 'income') {
+        // For income, remove the money
+        const account = accounts[transaction.accountId];
+        await updateAccount({
+          ...account,
+          balance: account.balance - transaction.amount,
           updatedAt: new Date().toISOString()
         });
       }
@@ -156,16 +203,30 @@ export default function AllTransactionsScreen() {
 
     const account = accounts[transaction.accountId];
     const category = categories[transaction.categoryId];
-    const transferToAccount = transaction.transferTo ? accounts[transaction.transferTo] : null;
+    
+    // Find linked transaction for transfers
+    const linkedTransaction = transaction.linkedTransactionId 
+      ? transactions.find(t => t.id === transaction.linkedTransactionId) 
+      : null;
+    
+    const isTransfer = transaction.type === 'debit' || transaction.type === 'credit';
+    const transferAccount = linkedTransaction ? accounts[linkedTransaction.accountId] : null;
 
     const getAmountColor = () => {
-      if (transaction.type === 'transfer') return '#21965B';
+      if (transaction.type === 'debit') return '#FF3B30';
+      if (transaction.type === 'credit') return '#21965B';
       return transaction.type === 'expense' ? '#FF3B30' : '#21965B';
     };
 
     const getTransactionIcon = () => {
-      if (transaction.type === 'transfer') return '↔️';
+      if (transaction.type === 'debit' || transaction.type === 'credit') return '↔️';
       return category?.icon || '💰';
+    };
+
+    const getTransactionTitle = () => {
+      if (transaction.type === 'debit') return `Transfer to ${transferAccount?.name || 'Unknown Account'}`;
+      if (transaction.type === 'credit') return `Transfer from ${transferAccount?.name || 'Unknown Account'}`;
+      return category?.name || 'Unknown Category';
     };
 
     return (
@@ -177,7 +238,7 @@ export default function AllTransactionsScreen() {
       >
         <View className={`flex-1 justify-end ${isDarkMode ? 'bg-black/50' : 'bg-black/30'}`}>
           <View className={`rounded-t-3xl ${
-            isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'
+            isDarkMode ? 'bg-SurfaceDark' : 'bg-Background'
           }`}>
             <View className="flex-row justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
               <Text className={`text-xl font-montserrat-bold ${
@@ -199,37 +260,39 @@ export default function AllTransactionsScreen() {
                 <View 
                   className={`w-24 h-24 rounded-full items-center justify-center mb-4 border-2 shadow-sm`}
                   style={{ 
-                    borderColor: transaction.type === 'transfer' ? '#21965B' : (category?.color || '#21965B'),
+                    borderColor: isTransfer ? '#9B59B6' : (category?.color || '#21965B'),
                     backgroundColor: isDarkMode ? '#1E1E1E' : '#F8F8F8'
                   }}
                 >
                   <Text className="text-4xl">{getTransactionIcon()}</Text>
                 </View>
                 <Text className={`text-3xl font-montserrat-bold mb-1`} style={{ color: getAmountColor() }}>
-                  {transaction.type === 'transfer' ? '' : (transaction.type === 'expense' ? '-' : '+')}₹{transaction.amount.toLocaleString()}
+                  {transaction.type === 'debit' || transaction.type === 'expense' ? '-' : '+'}₹{transaction.amount.toLocaleString()}
                 </Text>
                 <Text className={`font-montserrat-medium text-lg mb-2 ${
                   isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                 }`}>
-                  {transaction.type === 'transfer' 
-                    ? `Transfer to ${transferToAccount?.name || 'Unknown Account'}`
-                    : category?.name || 'Unknown Category'}
+                  {getTransactionTitle()}
                 </Text>
                 <View className={`px-3 py-1 rounded-full ${
-                  transaction.type === 'expense' 
+                  transaction.type === 'expense' || transaction.type === 'debit'
                     ? 'bg-red-100' 
-                    : transaction.type === 'income' 
+                    : transaction.type === 'income' || transaction.type === 'credit'
                       ? 'bg-green-100' 
                       : 'bg-blue-100'
                 }`}>
                   <Text className={`font-montserrat-medium text-xs ${
-                    transaction.type === 'expense' 
+                    transaction.type === 'expense' || transaction.type === 'debit'
                       ? 'text-red-700' 
-                      : transaction.type === 'income' 
+                      : transaction.type === 'income' || transaction.type === 'credit'
                         ? 'text-green-700' 
                         : 'text-blue-700'
                   }`}>
-                    {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                    {transaction.type === 'debit' 
+                      ? 'Transfer Out' 
+                      : transaction.type === 'credit' 
+                        ? 'Transfer In' 
+                        : transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
                   </Text>
                 </View>
               </View>
@@ -270,7 +333,7 @@ export default function AllTransactionsScreen() {
                       <Text className={`font-montserrat-medium ${
                         isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
                       }`}>
-                        {transaction.type === 'transfer' ? 'From Account' : 'Account'}
+                        {transaction.type === 'debit' ? 'From Account' : 'Account'}
                       </Text>
                     </View>
                     <Text className={`font-montserrat ${
@@ -280,11 +343,11 @@ export default function AllTransactionsScreen() {
                     </Text>
                   </View>
 
-                  {transaction.type === 'transfer' && (
+                  {isTransfer && linkedTransaction && (
                     <View className="flex-row justify-between items-center">
                       <View className="flex-row items-center">
                         <Ionicons 
-                          name="arrow-forward-circle-outline" 
+                          name={transaction.type === 'debit' ? "arrow-forward-circle-outline" : "arrow-back-circle-outline"}
                           size={20} 
                           color={isDarkMode ? '#AAAAAA' : '#666666'} 
                           className="mr-2"
@@ -292,13 +355,13 @@ export default function AllTransactionsScreen() {
                         <Text className={`font-montserrat-medium ${
                           isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
                         }`}>
-                          To Account
+                          {transaction.type === 'debit' ? 'To Account' : 'From Account'}
                         </Text>
                       </View>
                       <Text className={`font-montserrat ${
                         isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                       }`}>
-                        {transferToAccount?.name || 'Unknown Account'}
+                        {transferAccount?.name || 'Unknown Account'}
                       </Text>
                     </View>
                   )}
@@ -362,11 +425,25 @@ export default function AllTransactionsScreen() {
   const renderTransaction = ({ item }: { item: Transaction }) => {
     const account = accounts[item.accountId];
     const category = categories[item.categoryId];
-    const transferToAccount = item.transferTo ? accounts[item.transferTo] : null;
+    
+    // Find linked transaction for transfers
+    const linkedTransaction = item.linkedTransactionId 
+      ? transactions.find(t => t.id === item.linkedTransactionId) 
+      : null;
+    
+    const isTransfer = item.type === 'debit' || item.type === 'credit';
+    const transferAccount = linkedTransaction ? accounts[linkedTransaction.accountId] : null;
 
     const getAmountColor = () => {
-      if (item.type === 'transfer') return '#21965B';
+      if (item.type === 'debit') return '#FF3B30';
+      if (item.type === 'credit') return '#21965B';
       return item.type === 'expense' ? '#FF3B30' : '#21965B';
+    };
+
+    const getTransactionTitle = () => {
+      if (item.type === 'debit') return `Transfer to ${transferAccount?.name || 'Unknown Account'}`;
+      if (item.type === 'credit') return `Transfer from ${transferAccount?.name || 'Unknown Account'}`;
+      return category?.name || 'Unknown Category';
     };
 
     return (
@@ -382,19 +459,17 @@ export default function AllTransactionsScreen() {
         <View className="flex-row items-center">
           <View 
             className={`w-10 h-10 rounded-full items-center justify-center mr-3 border-2`}
-            style={{ borderColor: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}
+            style={{ borderColor: isTransfer ? '#9B59B6' : (category?.color || '#21965B') }}
           >
-            <Text style={{ color: item.type === 'transfer' ? '#21965B' : (category?.color || '#21965B') }}>
-              {item.type === 'transfer' ? '↔️' : (category?.icon || '💰')}
+            <Text style={{ color: isTransfer ? '#9B59B6' : (category?.color || '#21965B') }}>
+              {isTransfer ? '↔️' : (category?.icon || '💰')}
             </Text>
           </View>
           <View>
             <Text className={`font-montserrat-medium ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
             }`}>
-              {item.type === 'transfer' 
-                ? `Transfer to ${transferToAccount?.name || 'Unknown Account'}`
-                : category?.name || 'Unknown Category'}
+              {getTransactionTitle()}
             </Text>
             <Text className={`font-montserrat text-sm ${
               isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
@@ -404,7 +479,7 @@ export default function AllTransactionsScreen() {
           </View>
         </View>
         <Text className={`font-montserrat-semibold`} style={{ color: getAmountColor() }}>
-          {item.type === 'transfer' ? '→' : (item.type === 'expense' ? '-' : '+')}₹{item.amount.toLocaleString()}
+          {item.type === 'debit' || item.type === 'expense' ? '-' : '+'}₹{item.amount.toLocaleString()}
         </Text>
       </TouchableOpacity>
     );
@@ -473,7 +548,7 @@ export default function AllTransactionsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            className={`p-4 rounded-xl ${
+            className={`p-4 rounded-xl mb-2 ${
               filterType === 'income'
                 ? (isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary')
                 : (isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface')
@@ -514,15 +589,7 @@ export default function AllTransactionsScreen() {
 
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}>
-      <View className="px-6 pt-12 pb-6">
-        <View className="flex-row justify-between items-center mb-6">
-          <Text className={`text-2xl font-montserrat-bold ${
-            isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
-          }`}>
-            All Transactions
-          </Text>
-        </View>
-
+      <View className="px-6 pt-12 pb-6 flex-1">
         <View className="flex-row items-center mb-6">
           <View className={`flex-1 flex-row items-center rounded-xl h-[55px] pl-3 mr-3 ${
             isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
@@ -561,7 +628,16 @@ export default function AllTransactionsScreen() {
           renderItem={renderTransaction}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ gap: 16 }}
+          contentContainerStyle={{ gap: 16, paddingBottom: 20 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[isDarkMode ? '#FFFFFF' : '#000000']}
+              tintColor={isDarkMode ? '#FFFFFF' : '#000000'}
+              progressBackgroundColor={isDarkMode ? '#1E1E1E' : '#F8F8F8'}
+            />
+          }
         />
       </View>
       <FilterModal />
@@ -575,4 +651,4 @@ export default function AllTransactionsScreen() {
       />
     </View>
   );
-} 
+}

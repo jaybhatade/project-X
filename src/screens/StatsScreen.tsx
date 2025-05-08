@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions, RefreshControl } from 'react-native';
 import Svg, { Path, Circle, Line, Text as SvgText, G } from 'react-native-svg';
 import { 
   getAllTransactions, 
@@ -8,6 +8,8 @@ import {
 import { Transaction, Category } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import MonthSelector from '../components/BudgetComponents/MonthSelector';
+import BarChart from '../components/Charts/BarChart';
+import { getRecentTransactionsData, getCategoryBreakdown, ChartDataItem } from '../services/StatisticsService';
 
 // Helper function to format currency
 const formatCurrency = (amount: number) => {
@@ -32,11 +34,23 @@ export default function StatsScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [weeklyData, setWeeklyData] = useState<Array<{
     week: number;
     balance: number;
     transactions: Transaction[];
   }>>([]);
+  const [chartData, setChartData] = useState<{
+    incomeData: ChartDataItem[];
+    expenseData: ChartDataItem[];
+    totalIncome: number;
+    totalExpense: number;
+  }>({
+    incomeData: [],
+    expenseData: [],
+    totalIncome: 0,
+    totalExpense: 0
+  });
 
   const loadData = async () => {
     try {
@@ -45,6 +59,10 @@ export default function StatsScreen() {
 
       const categoriesData = await getAllCategories() as Category[];
       setCategories(categoriesData);
+
+      // Get transaction data for charts using the selected month
+      const recentStats = await getRecentTransactionsData(selectedDate);
+      setChartData(recentStats);
 
       // Calculate weekly data for selected month
       const selectedMonth = selectedDate.getMonth();
@@ -84,6 +102,8 @@ export default function StatsScreen() {
 
     } catch (error) {
       console.error("Failed to load data:", error);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -102,6 +122,14 @@ export default function StatsScreen() {
     const newDate = new Date(selectedDate);
     newDate.setMonth(newDate.getMonth() + 1);
     setSelectedDate(newDate);
+  };
+
+  // Format month for display
+  const getMonthYearDisplay = () => {
+    return selectedDate.toLocaleDateString('en-US', { 
+      month: 'long', 
+      year: 'numeric' 
+    });
   };
 
   const width = Dimensions.get("window").width - 40;
@@ -149,8 +177,25 @@ export default function StatsScreen() {
 
   const linePath = createSmoothPath();
 
+  // Handle pull-to-refresh
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+  };
+
   return (
-    <ScrollView style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#F5F5F5' }]}>
+    <ScrollView 
+      style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#F5F5F5' }]}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#21965B']}
+          tintColor={isDarkMode ? '#FFFFFF' : '#000000'}
+          progressBackgroundColor={isDarkMode ? '#1E1E1E' : '#FFFFFF'}
+        />
+      }
+    >
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
@@ -164,124 +209,22 @@ export default function StatsScreen() {
           onPreviousMonth={handlePreviousMonth}
           onNextMonth={handleNextMonth}
         />
-
-        {/* Weekly Balance Chart */}
-        <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}>
-          <Text style={[styles.cardTitle, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
-            Weekly Balance
-          </Text>
-          <Svg width={width} height={height}>
-            {/* Y-axis */}
-            <Line
-              x1={padding}
-              y1={padding}
-              x2={padding}
-              y2={height - padding}
-              stroke={isDarkMode ? '#333333' : '#E0E0E0'}
-              strokeWidth="1"
-            />
-            {/* X-axis */}
-            <Line
-              x1={padding}
-              y1={height - padding}
-              x2={width - padding}
-              y2={height - padding}
-              stroke={isDarkMode ? '#333333' : '#E0E0E0'}
-              strokeWidth="1"
-            />
-            
-            {/* Y-axis labels */}
-            <G>
-              {[-valueRange, -valueRange/2, 0, valueRange/2, valueRange].map((value, index) => {
-                const y = height - padding - ((value + valueRange) * chartHeight / (valueRange * 2));
-                return (
-                  <G key={index}>
-                    <Line
-                      x1={padding - 5}
-                      y1={y}
-                      x2={padding}
-                      y2={y}
-                      stroke={isDarkMode ? '#333333' : '#E0E0E0'}
-                      strokeWidth="1"
-                    />
-                    <SvgText
-                      x={padding - 10}
-                      y={y + 4}
-                      fill={isDarkMode ? '#FFFFFF' : '#666666'}
-                      fontSize="10"
-                      textAnchor="end"
-                    >
-                      {formatCurrency(value)}
-                    </SvgText>
-                  </G>
-                );
-              })}
-            </G>
-
-            {/* Data line */}
-            <Path
-              d={linePath}
-              stroke="#21965B"
-              strokeWidth="2"
-              fill="none"
-            />
-
-            {/* Data points */}
-            {weeklyData.map((data, index) => {
-              const x = padding + (index * chartWidth / (weeklyData.length - 1));
-              const y = height - padding - ((data.balance + valueRange) * chartHeight / (valueRange * 2));
-              return (
-                <G key={index}>
-                  <Circle
-                    cx={x}
-                    cy={y}
-                    r="4"
-                    fill="#21965B"
-                  />
-                  <SvgText
-                    x={x}
-                    y={y - 10}
-                    fill={isDarkMode ? '#FFFFFF' : '#666666'}
-                    fontSize="10"
-                    textAnchor="middle"
-                  >
-                    {formatCurrency(data.balance)}
-                  </SvgText>
-                </G>
-              );
-            })}
-
-            {/* X-axis labels */}
-            {weeklyData.map((data, index) => (
-              <SvgText
-                key={index}
-                x={padding + (index * chartWidth / (weeklyData.length - 1))}
-                y={height - padding + 20}
-                fill={isDarkMode ? '#FFFFFF' : '#666666'}
-                fontSize="10"
-                textAnchor="middle"
-              >
-                Week {index + 1}
-              </SvgText>
-            ))}
-          </Svg>
-        </View>
+        <BarChart 
+          incomeData={chartData.incomeData} 
+          expenseData={chartData.expenseData}
+          title={`Income/Expense for ${getMonthYearDisplay()}`}
+          formatAmount={formatCurrency} 
+        />
 
         {/* Monthly Summary Card */}
         <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}>
-          <Text style={[styles.cardTitle, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
-            Monthly Summary
-          </Text>
           <View style={styles.summaryContainer}>
             <View style={styles.summaryItem}>
               <Text style={[styles.summaryLabel, { color: isDarkMode ? '#B0B0B0' : '#666666' }]}>
                 Total Income
               </Text>
               <Text style={[styles.summaryValue, styles.incomeText]}>
-                {formatCurrency(weeklyData.reduce((sum, week) => 
-                  sum + week.transactions
-                    .filter(t => t.type === 'income')
-                    .reduce((s, t) => s + t.amount, 0), 0))}
+                {formatCurrency(chartData.totalIncome)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
@@ -289,14 +232,13 @@ export default function StatsScreen() {
                 Total Expenses
               </Text>
               <Text style={[styles.summaryValue, styles.expenseText]}>
-                {formatCurrency(weeklyData.reduce((sum, week) => 
-                  sum + week.transactions
-                    .filter(t => t.type === 'expense')
-                    .reduce((s, t) => s + t.amount, 0), 0))}
+                {formatCurrency(chartData.totalExpense)}
               </Text>
             </View>
           </View>
         </View>
+
+        {/* Bar Chart */}
       </View>
     </ScrollView>
   );
@@ -308,6 +250,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    paddingTop: 45,
   },
   header: {
     marginBottom: 20,

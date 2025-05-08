@@ -30,18 +30,15 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
     try {
       const transactions = await getAllTransactions();
 
-      // Get current month's start and end dates
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      // Filter transactions for current month
       const currentMonthTransactions = transactions.filter(transaction => {
         const transactionDate = new Date(transaction.date);
         return transactionDate >= startOfMonth && transactionDate <= endOfMonth;
       });
 
-      // Calculate income and expenses
       const income = currentMonthTransactions
         .filter(t => t.type === 'income')
         .reduce((sum, t) => sum + t.amount, 0);
@@ -54,7 +51,6 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
       setMonthlyExpenses(expenses);
       setNetBalance(income - expenses);
 
-      // Set current month name
       setCurrentMonth(now.toLocaleString('default', { month: 'long' }));
 
       if (onAccountsUpdate) {
@@ -65,12 +61,10 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
     }
   }, [user, onAccountsUpdate]);
 
-  // Initial fetch
   useEffect(() => {
     fetchTransactionSummary();
   }, [fetchTransactionSummary, lastUpdate]);
 
-  // Refresh on focus
   useFocusEffect(
     useCallback(() => {
       fetchTransactionSummary();
@@ -85,43 +79,29 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
   return (
     <TouchableOpacity
       onPress={() => navigation.navigate('ManageAccounts')}
-      className={`p-6 rounded-xl mx-6 mb-8 bg-PrimaryDark ${
-        isDarkMode ? 'bg-SurfaceDark' : 'bg-SecondaryDark'
-      }`}
+      className={`p-6 rounded-xl mx-6 mb-8 ${isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'} shadow-lg`}
       activeOpacity={0.7}
     >
-      <View className="flex-row justify-between items-start">
-        <View>
+      <View className="flex-col space-y-4">
+        <View className='flex-row justify-between items-start'>
           <View className="mb-4">
-            <Text className="text-white font-montserrat-medium text-lg ">
-              Balance
-            </Text>
-            <Text className="text-white font-montserrat-bold text-4xl mb-1">
-              {formatCurrency(netBalance)}
-            </Text>
+            <Text className={` ${isDarkMode ? 'text-white' : 'text-black'} font-montserrat-medium text-lg`}>Balance</Text>
+            <Text className={` ${isDarkMode ? 'text-white' : 'text-black'} font-montserrat-bold text-4xl mb-1`}>{formatCurrency(netBalance)}</Text>
           </View>
-          <View>
-            <View className="flex-row items-center">
-              <Ionicons name="calendar-outline" size={20} color="#fff" style={{ marginRight: 6 }} />
-              <Text className="text-white font-montserrat-medium text-lg ">
-                {currentMonth}
-              </Text>
-            </View>
+          <View className="flex-row items-center">
+            <Ionicons name="calendar-outline" size={20} color={isDarkMode ? '#fff' : '#444'} style={{ marginRight: 6 }} />
+            <Text className={`font-montserrat-medium text-lg ${isDarkMode ? 'text-white' : 'text-black'}`}>{currentMonth}</Text>
           </View>
         </View>
 
-        <View>
+        <View className='flex-row justify-between items-center'>
           <View className="mb-4">
-            <Text className="text-white font-montserrat-medium text-base">Income</Text>
-            <Text className="text-PrimaryDark font-montserrat-semibold text-xl">
-              {formatCurrency(monthlyIncome)}
-            </Text>
+            <Text className={`font-montserrat-medium text-base ${isDarkMode ? 'text-white' : 'text-black'}`}>Income</Text>
+            <Text className="text-Primary font-montserrat-semibold text-xl">{formatCurrency(monthlyIncome)}</Text>
           </View>
           <View>
-            <Text className="text-white font-montserrat-medium text-base">Expense</Text>
-            <Text className="text-red-500 font-montserrat-semibold text-xl">
-              {formatCurrency(monthlyExpenses)}
-            </Text>
+            <Text className={`font-montserrat-medium text-base ${isDarkMode ? 'text-white' : 'text-black'}`}>Expense</Text>
+            <Text className="text-red-500 font-montserrat-semibold text-xl">{formatCurrency(monthlyExpenses)}</Text>
           </View>
         </View>
       </View>
