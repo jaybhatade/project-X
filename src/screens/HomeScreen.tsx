@@ -95,7 +95,7 @@ export default function HomeScreen() {
           <BalanceCard />
 
               {/* Recent Transactions */}
-              <View className="mb-8">
+              <View className="">
                 <RecentTransactions />
               </View>
             </View>
@@ -107,7 +107,7 @@ export default function HomeScreen() {
             }`}>
               Budget
             </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Budget')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Budget')}>
                 <Text className="text-lg font-montserrat-medium text-Primary">
                   view all
                 </Text>

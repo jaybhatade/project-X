@@ -721,6 +721,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   goalsList: {
+    padding:20,
     paddingBottom: 80,
   },
   goalCard: {
