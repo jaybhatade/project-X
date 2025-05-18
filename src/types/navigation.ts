@@ -21,6 +21,7 @@ export type MainTabParamList = {
   Home: undefined;
   Budget: undefined;
   Profile: undefined;
+  Null:undefined;
   Add: undefined;
   Stats: undefined;
   AI: undefined;

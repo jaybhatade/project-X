@@ -42,7 +42,9 @@
     "react-native-screens": "~4.10.0",
     "react-native-svg": "15.11.2",
     "react-native-web": "^0.20.0",
-    "react-native-webview": "13.13.5"
+    "react-native-webview": "13.13.5",
+    "@expo/ngrok": "^4.1.0",
+    "expo-font": "~13.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

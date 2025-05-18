@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet  } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import fontStyles  from '../utils/fontStyles'
 import { getAllTransactions } from '../../db/db';
 import { useAuth } from '../contexts/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
+import { CalendarDays } from 'lucide-react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
@@ -79,29 +80,25 @@ export default function BalanceCard({ onAccountsUpdate }: BalanceCardProps) {
   return (
     <TouchableOpacity
       onPress={() => navigation.navigate('ManageAccounts')}
-      className={`p-6 rounded-xl mx-6 mb-8 ${isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'} shadow-lg`}
+      className={`p-6 rounded-[20px] mx-6 mb-8 ${isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'} shadow-lg`}
       activeOpacity={0.7}
     >
       <View className="flex-col space-y-4">
         <View className='flex-row justify-between items-start'>
-          <View className="mb-4">
-            <Text className={` ${isDarkMode ? 'text-white' : 'text-black'} font-montserrat-medium text-lg`}>Balance</Text>
-            <Text className={` ${isDarkMode ? 'text-white' : 'text-black'} font-montserrat-bold text-4xl mb-1`}>{formatCurrency(netBalance)}</Text>
-          </View>
           <View className="flex-row items-center">
-            <Ionicons name="calendar-outline" size={20} color={isDarkMode ? '#fff' : '#444'} style={{ marginRight: 6 }} />
-            <Text className={`font-montserrat-medium text-lg ${isDarkMode ? 'text-white' : 'text-black'}`}>{currentMonth}</Text>
+            <CalendarDays size={24} color={isDarkMode ? '#fff' : '#444'} style={{ marginRight: 6 }} />
+            <Text style={fontStyles('extrabold')} className={`text-3xl ${isDarkMode ? 'text-white' : 'text-black'}`}>{currentMonth}</Text>
           </View>
         </View>
 
-        <View className='flex-row justify-between items-center'>
-          <View className="mb-4">
-            <Text className={`font-montserrat-medium text-base ${isDarkMode ? 'text-white' : 'text-black'}`}>Income</Text>
-            <Text className="text-Primary font-montserrat-semibold text-xl">{formatCurrency(monthlyIncome)}</Text>
+        <View className='flex-row justify-between items-center mt-10'>
+          <View className="">
+            <Text style={fontStyles('extrabold')} className={`${isDarkMode ? 'text-white' : 'text-black'} text-2xl`}>Income</Text>
+            <Text style={fontStyles('extrabold')} className="text-Primary text-4xl">{formatCurrency(monthlyIncome)}</Text>
           </View>
           <View>
-            <Text className={`font-montserrat-medium text-base ${isDarkMode ? 'text-white' : 'text-black'}`}>Expense</Text>
-            <Text className="text-red-500 font-montserrat-semibold text-xl">{formatCurrency(monthlyExpenses)}</Text>
+            <Text style={fontStyles('extrabold')} className={`${isDarkMode ? 'text-white' : 'text-black'} text-2xl`}>Expense</Text>
+            <Text style={fontStyles('extrabold')} className="text-red-500 text-4xl">{formatCurrency(monthlyExpenses)}</Text>
           </View>
         </View>
       </View>

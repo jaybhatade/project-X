@@ -6,11 +6,13 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'montserrat': ['Montserrat'],
-        'montserrat-light': ['Montserrat-Light'],
-        'montserrat-medium': ['Montserrat-Medium'],
-        'montserrat-semibold': ['Montserrat-SemiBold'],
-        'montserrat-bold': ['Montserrat-Bold'],
+        figtree: {
+          regular: 'Figtree-Regular',
+          medium: 'Figtree-Medium',
+          bold: 'Figtree-Bold',
+          semiBold: 'Figtree-SemiBold',
+          extraBold: 'Figtree-ExtraBold',
+        }
       },
       colors: {
         // Light Theme Colors
@@ -28,8 +30,8 @@ module.exports = {
         // Dark Theme Colors
         PrimaryDark: '#21965B',
         SecondaryDark: 'rgb(25, 110, 68)',
-        BackgroundDark: '#000000',
-        SurfaceDark: '#1E1E1E',
+        BackgroundDark: '#0F172A',
+        SurfaceDark: '#1E293B',
         OnPrimaryDark: '#000000',
         OnSecondaryDark: '#000000',
         OnBackgroundDark: '#FFFFFF',

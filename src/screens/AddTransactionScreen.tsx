@@ -341,7 +341,7 @@ const AddTransactionScreen = () => {
   });
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#F5F5F5' }]}>
+    <ScrollView className={`${ isDarkMode ? 'bg-BackgroundDark' : '#F5F5F5' }`}>
       <Modal
         visible={showCategoryModal}
         animationType="slide"
@@ -360,8 +360,8 @@ const AddTransactionScreen = () => {
         <AccountModalContent />
       </Modal>
 
-      <View style={styles.form}>
-        <View style={[styles.typeSelector, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}>
+      <View className={`p-[20px] ${ isDarkMode ? 'bg-BackgroundDark' : '#F5F5F5'}`}>
+        <View className={`flex flex-row justify-between items-center p-[8px] rounded-[28px] ${ isDarkMode ? 'bg-SurfaceDark' : '#F5F5F5'}`}>
           <TouchableOpacity
             style={[styles.typeButton, type === 'expense' && styles.activeType]}
             onPress={() => setType('expense')}
@@ -436,29 +436,13 @@ const AddTransactionScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  form: {
-    padding: 20,
-  },
-  typeSelector: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    borderRadius: 10,
-    padding: 5,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
+
+
   typeButton: {
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 20,
   },
   activeType: {
     backgroundColor: '#21965B',

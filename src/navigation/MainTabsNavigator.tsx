@@ -23,16 +23,17 @@ export default function MainTabsNavigator() {
         screenOptions={{
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: '#1E1E1E',
+            backgroundColor: '#1E293B',
             borderColor: '#2C2C2C',
             borderTopLeftRadius: 25,
             borderTopRightRadius: 25,
-            height: 70,
+            height: 75,
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
-            paddingHorizontal: 30,
+            paddingTop:10,
+            paddingHorizontal: 20,
             justifyContent: 'center',
             alignItems: 'center',
           },
@@ -59,11 +60,9 @@ export default function MainTabsNavigator() {
           }}
         />
         <Tab.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{
-            tabBarIcon: ({ color }) => <Repeat color={color} size={24} />,
-          }}
+        name="Null"
+        component={() => null}
+        options={{ tabBarButton: () => null }}
         />
         <Tab.Screen
           name="Stats"
@@ -81,7 +80,8 @@ export default function MainTabsNavigator() {
         />
       </Tab.Navigator>
       <TouchableOpacity
-        className="bg-green-500 rounded-full p-4 absolute bottom-6 left-1/2 -translate-x-1/2"
+        className="bg-green-600 border-[6
+        px] border-slate-800 rounded-full p-4 absolute bottom-6 left-1/2 -translate-x-1/2"
         onPress={() => navigation.navigate('Add')}
       >
         <Plus color="#FFFFFF" size={32} />

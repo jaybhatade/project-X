@@ -25,9 +25,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ date, onChange, label }) => {
 
   return (
     <View style={{ marginBottom: 20 }}>
-      <Text style={{
+      <Text 
+      className='montserrat-bold'
+      style={{
         fontSize: 16,
-        fontWeight: '600',
         marginBottom: 8,
         color: isDarkMode ? '#FFFFFF' : '#000000',
       }}>
