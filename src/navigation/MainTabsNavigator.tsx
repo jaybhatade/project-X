@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { View, TouchableOpacity } from 'react-native';
+import { Home, Repeat, Plus, PieChart, Sparkles } from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen';
 import StatsScreen from '../screens/StatsScreen';
 import AIScreen from '../screens/AIScreen';
@@ -9,79 +9,83 @@ import BudgetScreen from '../screens/BudgetScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { useTheme } from '../contexts/ThemeContext';
 import { MainTabParamList } from '../types/navigation';
+import { useNavigation } from '@react-navigation/native';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export default function MainTabsNavigator() {
   const { isDarkMode } = useTheme();
+  const navigation = useNavigation();
 
   return (
-    <View className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
+    <View className={`flex-1 ${isDarkMode ? 'bg-black' : 'bg-[#1E1E1E]'}`}>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-            borderColor: isDarkMode ? '#2C2C2C' : '#4B4B4B',
+            backgroundColor: '#1E1E1E',
+            borderColor: '#2C2C2C',
             borderTopLeftRadius: 25,
             borderTopRightRadius: 25,
-
-            height: 60,
+            height: 70,
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            paddingHorizontal: 30,
+            justifyContent: 'center',
+            alignItems: 'center',
           },
           tabBarActiveTintColor: '#21965B',
-          tabBarInactiveTintColor: isDarkMode ? '#B0B0B0' : '#707070',
+          tabBarInactiveTintColor: '#B0B0B0',
           tabBarShowLabel: false,
           tabBarItemStyle: {
             justifyContent: 'center',
-            paddingVertical: 8,
           },
-        }}>
+        }}
+      >
         <Tab.Screen
           name="Home"
           component={HomeScreen}
           options={{
-            tabBarIcon: ({ color, size }) => (
-              <Feather name="home" size={size} color={color} />
-            ),
+            tabBarIcon: ({ color }) => <Home color={color} size={24} />,
           }}
         />
         <Tab.Screen
           name="Budget"
           component={BudgetScreen}
           options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="wallet-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Stats"
-          component={StatsScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Feather name="pie-chart" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="AI"
-          component={AIScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="sparkles-outline" size={size} color={color} />
-            ),
+            tabBarIcon: ({ color }) => <Repeat color={color} size={24} />,
           }}
         />
         <Tab.Screen
           name="Profile"
           component={ProfileScreen}
           options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="grid-outline" size={size} color={color} />
-            ),
+            tabBarIcon: ({ color }) => <Repeat color={color} size={24} />,
+          }}
+        />
+        <Tab.Screen
+          name="Stats"
+          component={StatsScreen}
+          options={{
+            tabBarIcon: ({ color }) => <PieChart color={color} size={24} />,
+          }}
+        />
+        <Tab.Screen
+          name="AI"
+          component={AIScreen}
+          options={{
+            tabBarIcon: ({ color }) => <Sparkles color={color} size={24} />,
           }}
         />
       </Tab.Navigator>
+      <TouchableOpacity
+        className="bg-green-500 rounded-full p-4 absolute bottom-6 left-1/2 -translate-x-1/2"
+        onPress={() => navigation.navigate('Add')}
+      >
+        <Plus color="#FFFFFF" size={32} />
+      </TouchableOpacity>
     </View>
   );
 }

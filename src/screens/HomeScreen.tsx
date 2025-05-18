@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, Animated, RefreshControl } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -25,6 +25,7 @@ export default function HomeScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const [refreshKey, setRefreshKey] = useState(0);
   const [userDetails, setUserDetails] = useState<{firstName: string, lastName: string} | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -47,6 +48,17 @@ export default function HomeScreen() {
     setRefreshKey(prev => prev + 1);
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    // Refresh all data
+    setRefreshKey(prev => prev + 1);
+    
+    // Wait for a short time to give the impression of refreshing
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
+
   const getInitials = () => {
     if (userDetails) {
       return `${userDetails.firstName[0]}${userDetails.lastName[0]}`;
@@ -64,6 +76,14 @@ export default function HomeScreen() {
         )}
         scrollEventThrottle={16}
         key={`scroll-${refreshKey}`}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={isDarkMode ? "#FFFFFF" : "#000000"}
+            colors={[isDarkMode ? "#FFFFFF" : "#000000"]}
+          />
+        }
       >
         <View className="pt-14 pb-6">
           {/* Header */}
@@ -92,11 +112,11 @@ export default function HomeScreen() {
           </View>
 
           {/* Balance Card */}
-          <BalanceCard />
+          <BalanceCard key={`balance-${refreshKey}`} onRefresh={refreshing} />
 
               {/* Recent Transactions */}
               <View className="">
-                <RecentTransactions />
+                <RecentTransactions key={`transactions-${refreshKey}`} />
               </View>
             </View>
           {/* Budget Overview */}
@@ -113,7 +133,7 @@ export default function HomeScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-            <BudgetListCards />
+            <BudgetListCards key={`budget-${refreshKey}`} />
           </View>
 
       </Animated.ScrollView>

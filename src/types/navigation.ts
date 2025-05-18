@@ -5,19 +5,23 @@ export type RootStackParamList = {
   Signup: undefined;
   Register: undefined;
   UserForm: undefined;
-  AddTransaction: undefined;
+  Add: undefined;
   AllTransactions: undefined;
+  Profile: undefined;
   Notifications: undefined;
   ManageAccounts: undefined;
   ManageCategories: undefined;
   Budget: undefined;
   Database: undefined;
+  IncomeDetails: undefined;
+  ExpenseDetails: undefined;
 };
 
 export type MainTabParamList = {
   Home: undefined;
   Budget: undefined;
+  Profile: undefined;
+  Add: undefined;
   Stats: undefined;
   AI: undefined;
-  Profile: undefined;
-}; 
+};

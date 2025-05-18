@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions, RefreshControl, TouchableOpacity } from 'react-native';
 import Svg, { Path, Circle, Line, Text as SvgText, G } from 'react-native-svg';
 import { 
   getAllTransactions, 
@@ -7,6 +7,9 @@ import {
 } from '../../db/db';
 import { Transaction, Category } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 import MonthSelector from '../components/BudgetComponents/MonthSelector';
 import BarChart from '../components/Charts/BarChart';
 import { getRecentTransactionsData, getCategoryBreakdown, ChartDataItem } from '../services/StatisticsService';
@@ -31,6 +34,7 @@ const getWeekNumber = (date: Date) => {
 
 export default function StatsScreen() {
   const { isDarkMode } = useTheme();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -132,6 +136,16 @@ export default function StatsScreen() {
     });
   };
 
+  // Navigate to Income Details Screen
+  const navigateToIncomeDetails = () => {
+    navigation.navigate('IncomeDetails');
+  };
+
+  // Navigate to Expense Details Screen
+  const navigateToExpenseDetails = () => {
+    navigation.navigate('ExpenseDetails');
+  };
+
   const width = Dimensions.get("window").width - 40;
   const height = 200;
   const padding = 40;
@@ -219,22 +233,43 @@ export default function StatsScreen() {
         {/* Monthly Summary Card */}
         <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}>
           <View style={styles.summaryContainer}>
-            <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: isDarkMode ? '#B0B0B0' : '#666666' }]}>
-                Total Income
-              </Text>
-              <Text style={[styles.summaryValue, styles.incomeText]}>
-                {formatCurrency(chartData.totalIncome)}
-              </Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: isDarkMode ? '#B0B0B0' : '#666666' }]}>
-                Total Expenses
-              </Text>
-              <Text style={[styles.summaryValue, styles.expenseText]}>
-                {formatCurrency(chartData.totalExpense)}
-              </Text>
-            </View>
+            {/* Touchable Income Summary */}
+            <TouchableOpacity 
+              style={styles.summaryItem}
+              onPress={navigateToIncomeDetails}
+              activeOpacity={0.7}
+            >
+              <View style={styles.summaryItemInner}>
+                <Text style={[styles.summaryLabel, { color: isDarkMode ? '#B0B0B0' : '#666666' }]}>
+                  Total Income
+                </Text>
+                <Text style={[styles.summaryValue, styles.incomeText]}>
+                  {formatCurrency(chartData.totalIncome)}
+                </Text>
+                <View style={styles.viewDetailsContainer}>
+                  <Text style={[styles.viewDetailsText, { color: '#21965B' }]}>View Details</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+            
+            {/* Touchable Expense Summary */}
+            <TouchableOpacity 
+              style={styles.summaryItem}
+              onPress={navigateToExpenseDetails}
+              activeOpacity={0.7}
+            >
+              <View style={styles.summaryItemInner}>
+                <Text style={[styles.summaryLabel, { color: isDarkMode ? '#B0B0B0' : '#666666' }]}>
+                  Total Expenses
+                </Text>
+                <Text style={[styles.summaryValue, styles.expenseText]}>
+                  {formatCurrency(chartData.totalExpense)}
+                </Text>
+                <View style={styles.viewDetailsContainer}>
+                  <Text style={[styles.viewDetailsText, { color: '#FF3B30' }]}>View Details</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -281,6 +316,12 @@ const styles = StyleSheet.create({
   },
   summaryItem: {
     alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  summaryItemInner: {
+    alignItems: 'center',
   },
   summaryLabel: {
     fontSize: 14,
@@ -289,11 +330,19 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 6,
   },
   incomeText: {
     color: '#21965B',
   },
   expenseText: {
     color: '#FF3B30',
+  },
+  viewDetailsContainer: {
+    marginTop: 6,
+  },
+  viewDetailsText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
 });

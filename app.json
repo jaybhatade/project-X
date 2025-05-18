@@ -32,10 +32,8 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/Logo.png",
-        "backgroundColor": "#ffffff",
-        "dark": {
-          "backgroundColor": "#121212"
-        }
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
       },
       "package": "com.jay7.bloombudget",
       "newArchEnabled": true
