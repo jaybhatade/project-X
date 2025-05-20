@@ -59,6 +59,7 @@ export const setupDatabase = async (userId: string) => {
         id TEXT PRIMARY KEY NOT NULL,
         userId TEXT,
         type TEXT,
+        title TEXT,
         categoryId TEXT,
         subCategoryId TEXT,
         amount REAL,
@@ -158,7 +159,6 @@ export const migrateDatabase = async () => {
   try {
     // Check if we need to add new columns to the users table
     const userColumns = await db.getAllAsync("PRAGMA table_info(users);");
-    
     const avatarExists = userColumns.some((column: any) => column.name === 'avatar');
     const dateOfBirthExists = userColumns.some((column: any) => column.name === 'dateOfBirth');
     const occupationExists = userColumns.some((column: any) => column.name === 'occupation');
@@ -218,10 +218,16 @@ export const migrateDatabase = async () => {
     // Check if transactions table has the subCategoryId column
     const transactionColumns = await db.getAllAsync("PRAGMA table_info(transactions);");
     const subCategoryIdExists = transactionColumns.some((column: any) => column.name === 'subCategoryId');
-    
+    const titleExists = transactionColumns.some((column: any) => column.name === 'title');
+
     if (!subCategoryIdExists) {
       console.log('Adding subCategoryId column to transactions table');
       await db.execAsync("ALTER TABLE transactions ADD COLUMN subCategoryId TEXT REFERENCES subcategories(id);");
+    }
+
+    if (!titleExists) {
+      console.log('Adding title column to transactions table');
+      await db.execAsync("ALTER TABLE transactions ADD COLUMN title TEXT;");
     }
 
     // Check if budgetLimit column exists in budgets table
@@ -284,6 +290,7 @@ export const migrateDatabase = async () => {
               creditTransactionId,
               transaction.userId,
               'credit',
+              transaction.title,null,
               transaction.categoryId,
               null, // subCategoryId
               transaction.amount,

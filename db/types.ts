@@ -25,6 +25,7 @@ export interface User {
   export interface Transaction {
     id: string;
     userId: string;
+    title?: string;
     type: string;
     categoryId: string;
     subCategoryId?: string;

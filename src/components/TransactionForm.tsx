@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import DatePicker from './DatePicker';
-import { Ionicons } from '@expo/vector-icons';
+import fontStyles from '@/utils/fontStyles';
+
 
 interface Category {
   id: string;
@@ -19,6 +20,8 @@ interface Account {
 }
 
 interface TransactionFormProps {
+  title: string;                          // New title field
+  setTitle: (title: string) => void;      // New title setter
   amount: string;
   setAmount: (amount: string) => void;
   note: string;
@@ -38,6 +41,8 @@ interface TransactionFormProps {
 }
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
+  title,                   // Add title
+  setTitle,                // Add setTitle
   amount,
   setAmount,
   note,
@@ -67,12 +72,30 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     setShowAccountModal(false);
   };
 
+  // Tailwind-style classes for light/dark mode
+  const labelClass = `text-lg font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-black'}`;
+  const inputClass = `rounded-[20px] py-5 px-4 text-base   ${isDarkMode ? 'bg-slate-800 text-white' : 'bg-white text-black'}`;
+  const placeholderClass = isDarkMode ? 'text-slate-400' : 'text-slate-500';
+  const selectorClass = `rounded-[20px] p-4   ${isDarkMode ? 'bg-slate-800' : 'bg-white'}`;
+
   return (
-    <View>
-      <View style={styles.inputContainer}>
-        <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>Amount</Text>
+    <View className="w-full">
+      {/* Title Field - New Addition */}
+      <View className="mb-5">
+        <Text style={fontStyles('bold')} className={`${labelClass} mt-2`}>Title</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF', color: isDarkMode ? '#FFFFFF' : '#000000' }]}
+          className={inputClass}
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Enter transaction title"
+          placeholderTextColor={isDarkMode ? '#B0B0B0' : '#707070'}
+        />
+      </View>
+
+      <View className="mb-5">
+        <Text style={fontStyles('bold')} className={labelClass}>Amount</Text>
+        <TextInput
+          className={inputClass}
           value={amount}
           onChangeText={setAmount}
           keyboardType="numeric"
@@ -81,57 +104,71 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         />
       </View>
 
-      <View style={styles.inputContainer}>
-        <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>Category</Text>
+      <View className="mb-5">
+        <Text style={fontStyles('bold')} className={labelClass}>Category</Text>
         <TouchableOpacity
-          style={[styles.categorySelector, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}
+          className={selectorClass}
           onPress={() => setShowCategoryModal(true)}
         >
           {categories.find(cat => cat.id === categoryId) ? (
-            <View style={styles.selectedCategory}>
-              <View style={[styles.iconContainer, { borderColor: categories.find(cat => cat.id === categoryId)?.color, borderWidth: 2 }]}>
+            <View className="flex-row items-center">
+              <View 
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  borderWidth: 2,
+                  borderColor: categories.find(cat => cat.id === categoryId)?.color,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 15,
+                }}
+              >
                 <Text style={{ fontSize: 20, color: categories.find(cat => cat.id === categoryId)?.color }}>
                   {categories.find(cat => cat.id === categoryId)?.icon}
                 </Text>
               </View>
-              <Text style={[styles.selectedCategoryText, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+              <Text className={`ml-2 text-base ${isDarkMode ? 'text-white' : 'text-black'}`}>
                 {categories.find(cat => cat.id === categoryId)?.name}
               </Text>
             </View>
           ) : (
-            <Text style={[styles.placeholder, { color: isDarkMode ? '#B0B0B0' : '#707070' }]}>
+            <Text className={placeholderClass + ' text-base'}>
               Select category
             </Text>
           )}
         </TouchableOpacity>
       </View>
 
-      <View style={styles.inputContainer}>
-        <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>Account</Text>
+      <View className="mb-5">
+        <Text style={fontStyles('bold')} className={labelClass}>Account</Text>
         <TouchableOpacity
-          style={[styles.categorySelector, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}
+          className={selectorClass}
           onPress={() => setShowAccountModal(true)}
         >
           {accounts.find(acc => acc.id === accountId) ? (
-            <View style={styles.selectedCategory}>
+            <View className="flex-row items-center">
               <Text style={{ fontSize: 24, color: '#000' }}>
                 {accounts.find(acc => acc.id === accountId)?.icon}
               </Text>
               <View>
-                <Text style={[styles.selectedCategoryText, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+                <Text className={`ml-2 text-base ${isDarkMode ? 'text-white' : 'text-black'}`}>
                   {accounts.find(acc => acc.id === accountId)?.name}
                 </Text>
-                <Text style={styles.accountBalance}>
+                <Text className="ml-2 text-sm text-slate-500">
                   Balance: ₹{accounts.find(acc => acc.id === accountId)?.balance}
                 </Text>
               </View>
             </View>
           ) : (
-            <Text style={[styles.placeholder, { color: isDarkMode ? '#B0B0B0' : '#707070' }]}>
+            <Text className={placeholderClass + ' text-base'}>
               Select account
             </Text>
           )}
         </TouchableOpacity>
+        <TouchableOpacity>
+
+          </TouchableOpacity>
       </View>
 
       <DatePicker
@@ -140,10 +177,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         label="Date"
       />
 
-      <View style={styles.inputContainer}>
-        <Text style={[styles.label, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>Note</Text>
+      <View className="mb-5">
+        <Text style={fontStyles('bold')} className={labelClass}>Note</Text>
         <TextInput
-          style={[styles.input, styles.noteInput, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF', color: isDarkMode ? '#FFFFFF' : '#000000' }]}
+          className={`${inputClass} h-24`}
+          style={{ textAlignVertical: 'top' }}
           value={note}
           onChangeText={setNote}
           placeholder="Add a note"
@@ -155,63 +193,4 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    fontFamily:''
-  },
-  input: {
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  noteInput: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  categorySelector: {
-    borderRadius: 10,
-    padding: 15,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  selectedCategory: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  selectedCategoryText: {
-    marginLeft: 10,
-    fontSize: 16,
-  },
-  accountBalance: {
-    marginLeft: 10,
-    fontSize: 14,
-    color: '#707070',
-  },
-  placeholder: {
-    fontSize: 16,
-  },
-});
-
-export default TransactionForm; 
+export default TransactionForm;

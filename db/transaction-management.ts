@@ -10,12 +10,13 @@ export const addTransaction = async (transaction: Transaction) => {
   try {
     await db.runAsync(
       `INSERT INTO transactions (
-        id, userId, type, categoryId, subCategoryId, amount, accountId, date, notes, linkedTransactionId, synced
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+        id, userId, type, title, categoryId, subCategoryId, amount, accountId, date, notes, linkedTransactionId, synced
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
       [
         transaction.id,
         transaction.userId,
         transaction.type,
+        transaction.title || "", // Add the title field
         transaction.categoryId,
         transaction.subCategoryId || null,
         transaction.amount,
@@ -39,11 +40,12 @@ export const updateTransaction = async (transaction: Transaction) => {
   try {
     await db.runAsync(
       `UPDATE transactions 
-       SET type = ?, categoryId = ?, subCategoryId = ?, amount = ?, 
+       SET type = ?, title = ?, categoryId = ?, subCategoryId = ?, amount = ?, 
            accountId = ?, date = ?, notes = ?, linkedTransactionId = ?, synced = 0
        WHERE id = ? AND userId = ?`,
       [
         transaction.type,
+        transaction.title || "", // Add the title field
         transaction.categoryId,
         transaction.subCategoryId || null,
         transaction.amount,
