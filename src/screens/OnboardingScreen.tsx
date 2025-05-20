@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import fontStyles from '../utils/fontStyles'
 import { RootStackParamList } from '../types/navigation';
 
 type OnboardingScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
@@ -13,48 +14,48 @@ export default function OnboardingScreen() {
 
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}>
-      <View className="flex-1 justify-center items-center px-6">
-        <Image
-          source={require('../../assets/images/money-bag.png')}
-          className="w-48 h-48 mb-8"
-          resizeMode="contain"
-        />
-        <Text className={`text-3xl font-montserrat-bold text-center mb-4 ${
+      <View className="flex-1 justify-start pt-48 items-center px-6">
+        <Text style={fontStyles('extrabold')} className={`text-4xl  text-center mb-4 ${
           isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
         }`}>
           Welcome to BloomBudget
         </Text>
-        <Text className={`text-lg font-montserrat text-center mb-8 ${
+        <Text style={fontStyles('medium')} className={`text-xl  text-center mb-8 ${
           isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
         }`}>
           Your personal finance companion for smarter spending and better saving
         </Text>
+          <Image
+            source={require('../../assets/images/money-bag.png')}
+            style={{ height: 250, width: 250 }}
+            resizeMode="contain"
+          />
       </View>
 
-      <View className="px-6 pb-12">
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Login')}
-          className={`py-4 rounded-lg mb-4 ${
-            isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
-          }`}
-        >
-          <Text className="text-white text-center font-montserrat-semibold text-lg">
-            Login
-          </Text>
-        </TouchableOpacity>
+      <View className="px-6 pb-20">
 
         <TouchableOpacity
           onPress={() => navigation.navigate('Signup')}
-          className={`py-4 rounded-lg border-2 ${
+          className={`py-4 rounded-[20px]  mb-6 ${
             isDarkMode 
-              ? 'border-PrimaryDark' 
-              : 'border-Primary'
+              ? 'bg-PrimaryDark' 
+              : 'bg-PrimaryDark'
           }`}
         >
-          <Text className={`text-center font-montserrat-semibold text-lg ${
-            isDarkMode ? 'text-PrimaryDark' : 'text-Primary'
+          <Text style={fontStyles('bold')} className={`text-center text-xl ${
+            isDarkMode ? 'text-white' : 'text-Primary'
           }`}>
-            Sign Up
+            Get Started
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Login')}
+          className={`py-4 rounded-[20px] border-2 ${
+            isDarkMode ? 'border-PrimaryDark' : 'bg-Primary'
+          }`}
+        >
+          <Text style={fontStyles('bold')} className="text-Primary text-center  text-xl">
+            Login
           </Text>
         </TouchableOpacity>
       </View>

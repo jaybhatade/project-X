@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
-import { getAllTransactions, getAllAccounts, getAllCategories } from '../../db/db';
+import { getAllTransactions, getAllAccounts, getAllCategories } from '../../db/dbUtils';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../types/navigation';
+import { RootStackParamList } from '../types/navigation';
 
 interface Transaction {
   id: string;

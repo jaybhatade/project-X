@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-import * as db from '../../db/db';
+import * as db from '../../db/dbUtils';
 
 interface CategorySelectionProps {
   selectedCategory: string;

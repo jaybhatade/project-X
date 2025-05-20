@@ -4,7 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { PieChart } from 'react-native-gifted-charts';
-import { getAllTransactions, getAllCategories } from '../../../db/db';
+import { getAllTransactions, getAllCategories } from '../../../db/dbUtils';
 import { Transaction, Category } from '../../types';
 import { getCategoryBreakdown, CategorySummary } from '../../services/StatisticsService';
 

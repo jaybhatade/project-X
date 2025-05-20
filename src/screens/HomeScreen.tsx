@@ -11,7 +11,7 @@ import BudgetListCards from '../components/BudgetComponents/BudgetListCards';
 import BalanceCard from '../components/BalanceCard';
 import { useDatabase } from '../contexts/DatabaseContext';
 import { useAuth } from '../contexts/AuthContext';
-import * as db from '../../db/db';
+import * as db from '../../db/dbUtils';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'> & {
   navigate: (screen: keyof RootStackParamList) => void;
@@ -112,7 +112,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Balance Card */}
-          <BalanceCard key={`balance-${refreshKey}`} onRefresh={refreshing} />
+          <BalanceCard key={`balance-${refreshKey}`} />
 
               {/* Recent Transactions */}
               <View className="">
@@ -137,23 +137,6 @@ export default function HomeScreen() {
           </View>
 
       </Animated.ScrollView>
-
-      {/* Floating Action Button */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate('AddTransaction')}
-        className={`absolute right-6 bottom-10 w-16 h-16 rounded-full items-center justify-center ${
-          isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
-        }`}
-        style={{
-          elevation: 4,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 4,
-        }}
-      >
-        <Ionicons name="add" size={36} color="#FFFFFF" />
-      </TouchableOpacity>
     </View>
   );
 }

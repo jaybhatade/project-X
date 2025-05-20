@@ -1,4 +1,4 @@
-import { getAllTransactions, getAllCategories } from '../../db/db';
+import { getAllTransactions, getAllCategories } from '../../db/dbUtils';
 import { Transaction, Category } from '../types';
 
 // Type definitions for chart data

@@ -15,7 +15,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-import db from '../../db/db';
+import db from '../../db/database-core';
 import DatePicker from '../components/DatePicker';
 import TransactionForm from '../components/TransactionForm';
 import TransferForm from '../components/TransferForm';

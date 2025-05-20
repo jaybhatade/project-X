@@ -9,7 +9,7 @@ import {
   getAllSubscriptions,
   getAllGoals,
   getAllUsers
-} from '../../db/db';
+} from '../../db/dbUtils';
 import { Ionicons } from '@expo/vector-icons';
 
 interface DatabaseData {

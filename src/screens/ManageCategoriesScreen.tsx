@@ -11,7 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import db from '../../db/db';
+import db from '../../db/database-core';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 

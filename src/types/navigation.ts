@@ -1,5 +1,5 @@
 export type RootStackParamList = {
-  MainTabs: undefined;
+  MainTabs: MainTabParamList;
   Onboarding: undefined;
   Login: undefined;
   Signup: undefined;
@@ -21,7 +21,7 @@ export type MainTabParamList = {
   Home: undefined;
   Budget: undefined;
   Profile: undefined;
-  Null:undefined;
+  Null: undefined;
   Add: undefined;
   Stats: undefined;
   AI: undefined;

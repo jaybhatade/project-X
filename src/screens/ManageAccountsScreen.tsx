@@ -12,7 +12,7 @@ import {
 import { Ionicons, Octicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
-import db from '../../db/db';
+import db from '../../db/database-core';
 
 interface Account {
   id: string;

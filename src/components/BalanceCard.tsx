@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet  } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import fontStyles  from '../utils/fontStyles'
-import { getAllTransactions } from '../../db/db';
+import { getAllTransactions } from '../../db/transaction-management';
 import { useAuth } from '../contexts/AuthContext';
 import { CalendarDays } from 'lucide-react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';

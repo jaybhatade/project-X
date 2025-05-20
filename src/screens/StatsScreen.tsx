@@ -4,7 +4,7 @@ import Svg, { Path, Circle, Line, Text as SvgText, G } from 'react-native-svg';
 import { 
   getAllTransactions, 
   getAllCategories,
-} from '../../db/db';
+} from '../../db/dbUtils';
 import { Transaction, Category } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';

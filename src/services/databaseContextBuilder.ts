@@ -4,7 +4,7 @@ import {
   getAllAccounts,
   getAllBudgets,
   getAllGoals
-} from '../../db/db';
+} from '../../db/dbUtils';
 
 /**
  * Utility to build financial context from the database

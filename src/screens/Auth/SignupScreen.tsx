@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { auth, createUserWithEmailAndPassword } from '../../services/firebase';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import fontStyles from '../../utils/fontStyles'
 import { RootStackParamList } from '../../types/navigation';
 
 type SignupScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Signup'>;
@@ -42,20 +43,20 @@ export default function SignupScreen() {
   return (
     <View className={`flex-1 px-6 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}>
       <View className="flex-1 justify-center">
-        <Text className={`text-3xl font-montserrat-bold mb-8 ${
+        <Text style={fontStyles('extrabold')}  className={`text-4xl mb-12 ${
           isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
         }`}>
           Create Account
         </Text>
 
         <View className="mb-6">
-          <Text className={`text-lg font-montserrat-medium mb-2 ${
+          <Text style={fontStyles('bold')}  className={`text-xl  mb-2 ${
             isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
           }`}>
             Email
           </Text>
-          <TextInput
-            className={`p-4 rounded-lg border-2 ${
+          <TextInput style={fontStyles('medium')}
+            className={`p-6 rounded-[20px] border-2 ${
               isDarkMode 
                 ? 'border-SurfaceDark bg-SurfaceDark text-TextPrimaryDark' 
                 : 'border-gray-300 bg-white text-TextPrimary'
@@ -70,13 +71,13 @@ export default function SignupScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className={`text-lg font-montserrat-medium mb-2 ${
+          <Text style={fontStyles('bold')}  className={`text-xl  mb-2 ${
             isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
           }`}>
             Password
           </Text>
-          <TextInput
-            className={`p-4 rounded-lg border-2 ${
+           <TextInput style={fontStyles('medium')}
+            className={`p-6 rounded-[20px] border-2 ${
               isDarkMode 
                 ? 'border-SurfaceDark bg-SurfaceDark text-TextPrimaryDark' 
                 : 'border-gray-300 bg-white text-TextPrimary'
@@ -90,13 +91,13 @@ export default function SignupScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className={`text-lg font-montserrat-medium mb-2 ${
+          <Text style={fontStyles('bold')}  className={`text-xl  -medium mb-2 ${
             isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
           }`}>
             Confirm Password
           </Text>
-          <TextInput
-            className={`p-4 rounded-lg border-2 ${
+           <TextInput style={fontStyles('medium')}
+            className={`p-6 rounded-[20px] border-2 ${
               isDarkMode 
                 ? 'border-SurfaceDark bg-SurfaceDark text-TextPrimaryDark' 
                 : 'border-gray-300 bg-white text-TextPrimary'
@@ -112,11 +113,11 @@ export default function SignupScreen() {
         <TouchableOpacity
           onPress={handleSignup}
           disabled={loading}
-          className={`py-4 rounded-lg mb-4 ${
+          className={`py-5 rounded-[20px] mt-10 mb-4 ${
             isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
           }`}
         >
-          <Text className="text-white text-center font-montserrat-semibold text-lg">
+          <Text style={fontStyles('bold')}  className="text-white text-center   text-xl">
             {loading ? 'Creating Account...' : 'Sign Up'}
           </Text>
         </TouchableOpacity>
@@ -125,7 +126,7 @@ export default function SignupScreen() {
           onPress={() => navigation.navigate('Login')}
           className="py-4"
         >
-          <Text className={`text-center font-montserrat ${
+          <Text style={fontStyles('bold')}  className={`text-center   ${
             isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
           }`}>
             Already have an account? Login

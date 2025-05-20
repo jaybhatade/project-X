@@ -5,9 +5,10 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDatabase } from '../../contexts/DatabaseContext';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import fontStyles from '../../utils/fontStyles';
 import { RootStackParamList } from '../../types/navigation';
 import { Ionicons } from '@expo/vector-icons';
-import * as db from '../../../db/db';
+import * as db from '../../../db/dbUtils';
 
 type UserFormScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'UserForm'>;
 
@@ -69,8 +70,8 @@ const UserFormScreen: React.FC = () => {
 
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}>
-      <View className="pt-14 px-6 pb-5">
-        <Text className={`text-2xl font-montserrat-bold ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
+      <View className="pt-20 px-6 pb-5">
+        <Text style={fontStyles('bold')} className={`text-2xl font-montserrat-bold ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
           Complete Your Profile
         </Text>
       </View>
@@ -86,7 +87,7 @@ const UserFormScreen: React.FC = () => {
           onPress={() => setActiveTab(0)}
           disabled={activeTab === 0}
         >
-          <Text className={`text-base font-montserrat-medium ${
+          <Text style={fontStyles('bold')} className={`text-xl font-montserrat-medium ${
             activeTab === 0 
               ? 'text-Primary font-montserrat-semibold' 
               : isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
@@ -103,7 +104,7 @@ const UserFormScreen: React.FC = () => {
           onPress={() => setActiveTab(1)}
           disabled={activeTab === 1 || !firstName || !lastName}
         >
-          <Text className={`text-base font-montserrat-medium ${
+          <Text style={fontStyles('bold')} className={`text-xl font-montserrat-medium ${
             activeTab === 1 
               ? 'text-Primary font-montserrat-semibold' 
               : isDarkMode ? 'text-TextSecondaryDark opacity-80' : 'text-TextSecondary opacity-80'
@@ -118,15 +119,17 @@ const UserFormScreen: React.FC = () => {
         {activeTab === 0 ? (
           /* User Info Tab */
           <View className="p-6">
-                  <Text className={`text-[20px] mb-6 leading-relaxed ${isDarkMode ? 'text-OnBackgroundDark' : 'text-TextSecondary'}`}>
-                  Personalize Your Experience !
+                  <Text style={fontStyles('extrabold')} className={`text-4xl mb-143 
+                     leading-relaxed ${isDarkMode ? 'text-OnBackgroundDark' : 'text-TextSecondary'}`}>
+                  Tell us about you !
       </Text>      
             <View className="mb-5">
-              <Text className={`text-base font-montserrat-medium mb-2 ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
+              <Text style={fontStyles('bold')} className={`text-xl  mb-2 ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
                 First Name
               </Text>
-              <TextInput
-                className={`border rounded-xl p-4 text-base ${
+              
+              <TextInput style={fontStyles('medium')}
+                className={`border rounded-[20px] p-5 text-base ${
                   isDarkMode 
                     ? 'bg-SurfaceDark text-TextPrimaryDark border-SurfaceDark' 
                     : 'bg-Background text-TextPrimary border-Surface'
@@ -139,11 +142,11 @@ const UserFormScreen: React.FC = () => {
             </View>
 
             <View className="mb-5">
-              <Text className={`text-base font-montserrat-medium mb-2 ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
+              <Text style={fontStyles('bold')} className={`text-xl font-montserrat-medium mb-2 ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
                 Last Name
               </Text>
-              <TextInput
-                className={`border rounded-xl p-4 text-base ${
+              <TextInput style={fontStyles('medium')}
+                className={`border rounded-[20px] p-5 text-base ${
                   isDarkMode 
                     ? 'bg-SurfaceDark text-TextPrimaryDark border-SurfaceDark' 
                     : 'bg-Background text-TextPrimary border-Surface'
@@ -156,11 +159,11 @@ const UserFormScreen: React.FC = () => {
             </View>
 
             <View className="mb-5">
-              <Text className={`text-base font-montserrat-medium mb-2 ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
+              <Text style={fontStyles('bold')} className={`text-xl font-montserrat-medium mb-2 ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
                 Phone Number
               </Text>
-              <TextInput
-                className={`border rounded-xl p-4 text-base ${
+              <TextInput style={fontStyles('medium')}
+                className={`border rounded-[20px] p-5 text-base ${
                   isDarkMode 
                     ? 'bg-SurfaceDark text-TextPrimaryDark border-SurfaceDark' 
                     : 'bg-Background text-TextPrimary border-Surface'
@@ -174,13 +177,13 @@ const UserFormScreen: React.FC = () => {
             </View>
 
             <TouchableOpacity
-              className={`p-4 rounded-xl items-center mt-4 ${
+              className={`p-5 rounded-[20px] items-center mt-16 ${
                 (!firstName || !lastName) ? 'opacity-60' : 'opacity-100'
               } bg-Primary`}
               onPress={handleContinue}
               disabled={!firstName || !lastName}
             >
-              <Text className="text-OnPrimary text-base font-montserrat-semibold">
+              <Text style={fontStyles('bold')} className="text-OnPrimary text-xl ">
                 Continue
               </Text>
             </TouchableOpacity>
@@ -227,26 +230,30 @@ const InitialBalanceContent: React.FC<{
       const currentDate = new Date().toISOString();
       
       // Create cash account with user's UID plus identifier
-      await db.addAccount({
-        id: `cash_${user.uid.substring(0, 8)}`,
-        userId: user.uid,
-        name: 'Cash',
-        balance: cashValue,
-        icon: '💵',
-        createdAt: currentDate,
-        updatedAt: currentDate
-      });
+      // Create cash account with user's UID plus identifier
+await db.addAccount({
+  id: `cash_${user.uid.substring(0, 8)}`,
+  userId: user.uid,
+  name: 'Cash',
+  balance: cashValue,
+  icon: '💵',
+  createdAt: currentDate,
+  updatedAt: currentDate,
+  synced: 0
+});
 
-      // Create bank account with user's UID plus identifier
-      await db.addAccount({
-        id: `bank_${user.uid.substring(0, 8)}`,
-        userId: user.uid,
-        name: 'Bank Account',
-        balance: bankValue,
-        icon: '🏛️',
-        createdAt: currentDate,
-        updatedAt: currentDate
-      });
+// Create bank account with user's UID plus identifier
+await db.addAccount({
+  id: `bank_${user.uid.substring(0, 8)}`,
+  userId: user.uid,
+  name: 'Bank Account',
+  balance: bankValue,
+  icon: '🏛️',
+  createdAt: currentDate,
+  updatedAt: currentDate,
+  synced: 0
+});
+
 
       setAccountsCreated(true);
       
@@ -264,20 +271,20 @@ const InitialBalanceContent: React.FC<{
   return (
     <View>
       
-      <Text className={`text-[20px] mb-6 leading-relaxed ${isDarkMode ? 'text-OnBackgroundDark' : 'text-TextSecondary'}`}>
+      <Text style={fontStyles('bold')} className={`text-[20px] mb-6 leading-relaxed ${isDarkMode ? 'text-OnBackgroundDark' : 'text-TextSecondary'}`}>
         Set up initial balance to track your finances accurately!
       </Text>      
 
       {/* Cash Account */}
       <View className="mb-5">
         <View className="flex-row items-center mb-2">
-          <Text className="text-xl mr-2">💵</Text>
-          <Text className={`text-base font-montserrat-medium ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
+          <Text style={fontStyles('bold')} className="text-xl mr-2">💵</Text>
+          <Text style={fontStyles('bold')} className={`text-base font-montserrat-medium ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
             Cash Balance
           </Text>
         </View>
-        <TextInput
-          className={`border rounded-xl p-4 text-base ${
+        <TextInput style={fontStyles('medium')}
+          className={`border rounded-[20px] p-5 text-base ${
             isDarkMode 
               ? 'bg-SurfaceDark text-TextPrimaryDark border-SurfaceDark' 
               : 'bg-Background text-TextPrimary border-Surface'
@@ -293,13 +300,13 @@ const InitialBalanceContent: React.FC<{
       {/* Bank Account */}
       <View className="mb-5">
         <View className="flex-row items-center mb-2">
-          <Text className="text-xl mr-2">🏛️</Text>
-          <Text className={`text-base font-montserrat-medium ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
+          <Text style={fontStyles('bold')} className="text-xl mr-2">🏛️</Text>
+          <Text style={fontStyles('bold')} className={`text-base font-montserrat-medium ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
             Bank Account Balance
           </Text>
         </View>
-        <TextInput
-          className={`border rounded-xl p-4 text-base ${
+        <TextInput style={fontStyles('medium')}
+          className={`border rounded-[20px] p-5 text-base ${
             isDarkMode 
               ? 'bg-SurfaceDark text-TextPrimaryDark border-SurfaceDark' 
               : 'bg-Background text-TextPrimary border-Surface'
@@ -312,25 +319,25 @@ const InitialBalanceContent: React.FC<{
         />
       </View>
 
-      <Text className={`text-base mb-6 leading-relaxed ${isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'}`}>
+      <Text style={fontStyles('bold')} className={`text-base mb-6 leading-relaxed ${isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'}`}>
         You can update or add more accounts later
       </Text>
       {accountsCreated ? (
-        <View className="items-center mt-6 p-4">
+        <View className="items-center mt-6 p-5">
           <Ionicons name="checkmark-circle" size={48} color="#21965B" />
-          <Text className={`mt-3 text-base font-montserrat-medium text-center ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
+          <Text style={fontStyles('bold')} className={`mt-3 text-base font-montserrat-medium text-center ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
             Accounts created successfully!
           </Text>
         </View>
       ) : (
         <View className="flex-row justify-between mt-4">
           <TouchableOpacity
-            className={`flex-1 p-3 rounded-xl items-center mr-3 border ${
+            className={`flex-1 p-3 rounded-[20px] items-center mr-3 border ${
               isDarkMode ? 'border-SurfaceDark' : 'border-Surface'
             }`}
             onPress={onCancel}
           >
-            <Text className={`text-base font-montserrat-semibold ${
+            <Text style={fontStyles('bold')} className={`text-base font-montserrat-semibold ${
               isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
             }`}>
               Back
@@ -338,10 +345,10 @@ const InitialBalanceContent: React.FC<{
           </TouchableOpacity>
           
           <TouchableOpacity
-            className="flex-1 p-4 rounded-xl items-center bg-Primary"
+            className="flex-1 p-5 rounded-[20px] items-center bg-Primary"
             onPress={handleSubmit}
           >
-            <Text className="text-OnPrimary text-base font-montserrat-semibold">
+            <Text style={fontStyles('bold')} className="text-OnPrimary text-base font-montserrat-semibold">
               Submit
             </Text>
           </TouchableOpacity>

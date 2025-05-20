@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Modal, TextInput, StyleSheet, ScrollView,
 import { useTheme } from '../contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import * as db from '../../db/db';
+import * as db from '../../db/dbUtils';
 
 interface InitialBalanceModalProps {
   visible: boolean;
@@ -48,7 +48,8 @@ const InitialBalanceModal: React.FC<InitialBalanceModalProps> = ({ visible, onCl
         balance: cashValue,
         icon: '💵',
         createdAt: currentDate,
-        updatedAt: currentDate
+        updatedAt: currentDate,
+        synced: 0
       });
 
       // Create bank account with user's UID plus identifier
@@ -59,7 +60,8 @@ const InitialBalanceModal: React.FC<InitialBalanceModalProps> = ({ visible, onCl
         balance: bankValue,
         icon: '🏛️',
         createdAt: currentDate,
-        updatedAt: currentDate
+        updatedAt: currentDate,
+        synced: 0
       });
 
       setAccountsCreated(true);

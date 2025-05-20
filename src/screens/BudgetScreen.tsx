@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import * as db from '../../db/db';
+import * as db from '../../db/dbUtils';
 import BudgetSummary from '../components/BudgetComponents/BudgetSummary';
 import BudgetItem from '../components/BudgetComponents/BudgetItem';
 import BudgetForm from '../components/BudgetComponents/BudgetForm';

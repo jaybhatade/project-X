@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from '
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import BudgetProgressBar from './BudgetProgressBar';
-import * as db from '../../../db/db';
+import * as db from '../../../db/dbUtils';
 import NoData from '../NoData';
 import { useAuth } from '../../contexts/AuthContext';
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Modal, Alert, RefreshControl } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { getAllTransactions, getAllAccounts, getAllCategories, deleteTransaction, updateAccount } from '../../db/db';
+import { getAllTransactions, getAllAccounts, getAllCategories, deleteTransaction, updateAccount } from '../../db/dbUtils';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Transaction {
@@ -9,6 +9,7 @@ interface Transaction {
   userId: string;
   type: string;
   categoryId: string;
+  subCategoryId: string;
   amount: number;
   accountId: string;
   date: string;
