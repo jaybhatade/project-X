@@ -13,14 +13,17 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import * as CategoryManager from '../../db/category-management';
 import { 
+  Smile,
   Plus, 
   Trash, 
-  Edit, 
   FolderOpen, 
   ChevronDown, 
   ChevronRight,
-  SlidersHorizontal
+  Pencil
 } from 'lucide-react-native'; // Using Lucide React Native icons
+import EmojiPicker from 'rn-emoji-keyboard'; // Import the emoji picker
+import fontStyles  from '../utils/fontStyles'
+
 
 interface Category {
   id: string;
@@ -64,6 +67,7 @@ export default function ManageCategoriesScreen() {
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [parentCategoryForSubcategory, setParentCategoryForSubcategory] = useState<Category | null>(null);
+  const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -103,17 +107,9 @@ export default function ManageCategoriesScreen() {
     }
   };
 
-  const handleIconChange = (text: string) => {
-    // Allow empty values
-    if (!text) {
-      setFormData(prev => ({ ...prev, icon: '' }));
-      return;
-    }
-    
-    // Take the first emoji from the input
-    const firstChar = [...text][0];
-    setFormData(prev => ({ ...prev, icon: firstChar }));
-  };
+  const handleEmojiSelect = useCallback((emoji: { emoji: string }) => {
+    setFormData(prev => ({ ...prev, icon: emoji.emoji }));
+  }, []);
 
   const handleAddCategory = async () => {
     if (!formData.name.trim()) {
@@ -337,41 +333,31 @@ export default function ManageCategoriesScreen() {
   };
 
   const renderSubcategoryItem = ({ item, parentCategory }: { item: Subcategory, parentCategory: Category }) => (
-    <View className={`p-4 pl-12 rounded-[20px] mb-2 flex-row items-center justify-between ${
-      isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
-    }`}>
-      <View className="flex-row items-center flex-1">
+    <View className="p-4 mx-4  rounded-[20px]  bg-slate-800" key={item.id}>
+      <View className="flex-row items-center justify-between">
         <View 
           className="w-8 h-8 rounded-full items-center justify-center mr-3"
           style={{ backgroundColor: item.color }}
         />
         <View className="flex-1">
-          <Text className={`font-montserrat-medium text-base ${
+          <Text style={fontStyles('extrabold')} className={`font-montserrat-medium text-base ${
             isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
           }`}>
             {item.name}
           </Text>
         </View>
-      </View>
-      <View className="flex-row">
         <TouchableOpacity
           onPress={() => openEditSubcategoryModal(item, parentCategory)}
-          className="mr-4"
+          className="p-4" // Increased touch area
         >
-          <Edit
-            size={22}
-            color={isDarkMode ? '#FFFFFF' : '#000000'}
-          />
+          <Pencil size={20} color={isDarkMode ? '#FFFFFF' : '#000000'} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDeleteSubcategory(item.id)}>
-          <Trash
-            size={22}
-            color={isDarkMode ? '#FFFFFF' : '#000000'}
-          />
-        </TouchableOpacity>
+        {/* Delete button is now only in the edit subcategory modal */}
       </View>
     </View>
   );
+  
+
 
   const renderItem = ({ item }: { item: Category & { subcategories: Subcategory[] } }) => {
     const isExpanded = expandedCategories.includes(item.id);
@@ -379,70 +365,66 @@ export default function ManageCategoriesScreen() {
     
     return (
       <View className="mb-3">
-        <View className={`p-4 rounded-[20px] mb-2 flex-row items-center justify-between ${
+        <View className={`p-4 rounded-[20px] mb-0 flex-row items-center justify-between ${
           isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'
-        }`}>
-          <TouchableOpacity 
+        }`} key={item.id}>
+          <TouchableOpacity
             className="flex-row items-center flex-1"
-            onPress={() => hasSubcategories && toggleCategoryExpansion(item.id)}
+            onPress={() => openEditModal(item)}
+            // onPress={() => hasSubcategories && toggleCategoryExpansion(item.id)}
           >
             <View 
               className="w-12 h-12 rounded-full items-center justify-center mr-4"
               style={{ borderColor: item.color, borderWidth: 2 }}
             >
-              <Text className="text-2xl">{item.icon}</Text>
+              <Text style={fontStyles('extrabold')}  className="text-2xl">{item.icon}</Text>
             </View>
             <View className="flex-1 flex-row items-center">
-              <View className="flex-1">
-                <Text className={`font-montserrat-medium text-lg ${
+              <View className="w-fit">
+                <Text style={fontStyles('extrabold')}  className={`font-montserrat-medium text-lg ${
                   isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                 }`}>
                   {item.name}
                 </Text>
-                <Text className={`font-montserrat text-sm ${
+                <Text style={fontStyles('extrabold')}  className={`font-montserrat text-sm ${
                   isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
                 }`}>
                   {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
                 </Text>
               </View>
+
+              <TouchableOpacity
+            className="flex-row h-full py-3 items-center justify-end flex-1"
+            onPress={() => hasSubcategories && toggleCategoryExpansion(item.id)}
+          >
               {hasSubcategories && (
                 isExpanded ? 
                   <ChevronDown size={22} color={isDarkMode ? '#FFFFFF' : '#000000'} /> : 
                   <ChevronRight size={22} color={isDarkMode ? '#FFFFFF' : '#000000'} />
-              )}
+                )}
+</TouchableOpacity>
             </View>
           </TouchableOpacity>
-          <View className="flex-row">
+          {/* <View className="flex-row">
             <TouchableOpacity
-              onPress={() => openAddSubcategoryModal(item)}
+              // onPress={() => openAddSubcategoryModal(item)}
               className="mr-4"
-            >
-              <SlidersHorizontal
-                size={22}
-                color={isDarkMode ? '#FFFFFF' : '#000000'}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
+            // Make the category title or icon clickable to open the edit modal
               onPress={() => openEditModal(item)}
-              className="mr-4"
             >
-              <Edit
+              <Pencil
                 size={22}
                 color={isDarkMode ? '#FFFFFF' : '#000000'}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDeleteCategory(item.id)}>
-              <Trash
-                size={22}
-                color={isDarkMode ? '#FFFFFF' : '#000000'}
-              />
-            </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
 
         {isExpanded && item.subcategories && item.subcategories.map(subcategory => (
-          <View key={subcategory.id}>
+          <View className="mb-0 mt-2" key={subcategory.id}>
+            <View className={subcategory.id === item.subcategories[item.subcategories.length - 1].id ? "mb-4" : ""}>
             {renderSubcategoryItem({ item: subcategory, parentCategory: item })}
+ </View>
           </View>
         ))}
       </View>
@@ -455,12 +437,12 @@ export default function ManageCategoriesScreen() {
         size={80}
         color={isDarkMode ? '#666666' : '#999999'}
       />
-      <Text className={`mt-4 text-lg font-montserrat-medium text-center ${
+      <Text style={fontStyles('extrabold')}  className={`mt-4 text-lg font-montserrat-medium text-center ${
         isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
       }`}>
         No categories yet
       </Text>
-      <Text className={`mt-2 text-sm font-montserrat text-center ${
+      <Text style={fontStyles('extrabold')}  className={`mt-2 text-sm font-montserrat text-center ${
         isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
       }`}>
         Add a category to get started
@@ -514,7 +496,7 @@ export default function ManageCategoriesScreen() {
               showsVerticalScrollIndicator={false}
               className="p-6"
             >
-              <Text className={`text-xl font-montserrat-bold mb-6 ${
+              <Text style={fontStyles('extrabold')}  className={`text-xl font-montserrat-bold mb-6 ${
                 isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
               }`}>
                 {editingCategory ? 'Edit Category' : 'Add New Category'}
@@ -526,27 +508,22 @@ export default function ManageCategoriesScreen() {
                   style={{ borderColor: formData.color, borderWidth: 2 }}
                 >
                   <TextInput
-                    className="text-3xl text-center"
+ className="text-3xl text-center p-0 m-0"
                     value={formData.icon}
-                    onChangeText={handleIconChange}
-                    placeholder="📚"
-                    placeholderTextColor={isDarkMode ? '#B0B0B0' : '#707070'}
-                    maxLength={2}
-                    editable={true}
-                    selectTextOnFocus={true}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    keyboardType="default"
-                    returnKeyType="done"
-                    blurOnSubmit={true}
+ placeholder="📚"
+ placeholderTextColor={isDarkMode ? '#B0B0B0' : '#707070'}
+ editable={false} // Make it non-editable
                   />
+                  <TouchableOpacity 
+                    className="absolute bottom-1 right-1 bg-transparent p-4"
+                    onPress={() => setIsEmojiPickerVisible(true)}
+                  >
+                  </TouchableOpacity>
                 </View>
                 <View className="flex-1">
                   <TextInput
                     className={`p-4 rounded-lg ${
-                      isDarkMode 
-                        ? 'bg-BackgroundDark text-TextPrimaryDark' 
-                        : 'bg-white text-TextPrimary'
+ isDarkMode ? 'bg-BackgroundDark text-TextPrimaryDark' : 'bg-white text-TextPrimary'
                     }`}
                     placeholder="Category Name"
                     placeholderTextColor={isDarkMode ? '#B0B0B0' : '#707070'}
@@ -555,13 +532,13 @@ export default function ManageCategoriesScreen() {
                   />
                 </View>
               </View>
-              <Text className={`font-montserrat-medium mb-3 ${
+              <Text style={fontStyles('extrabold')}  className={`font-montserrat-medium mb-3 ${
                 isDarkMode ? 'text-gray-400/50' : 'text-gray-500/50'
               }`}>
                 * Add custom emoji for the icon
               </Text>
 
-              <Text className={`font-montserrat-medium mb-3 ${
+              <Text style={fontStyles('extrabold')}  className={`font-montserrat-medium mb-3 ${
                 isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
               }`}>
                 Type
@@ -577,7 +554,7 @@ export default function ManageCategoriesScreen() {
                         : isDarkMode ? 'bg-BackgroundDark' : 'bg-white'
                     }`}
                   >
-                    <Text className={`font-montserrat-medium text-center ${
+                    <Text style={fontStyles('extrabold')}  className={`font-montserrat-medium text-center ${
                       formData.type === type
                         ? 'text-white'
                         : isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
@@ -588,7 +565,7 @@ export default function ManageCategoriesScreen() {
                 ))}
               </View>
 
-              <Text className={`font-montserrat-medium mb-3 ${
+              <Text style={fontStyles('extrabold')}  className={`font-montserrat-medium mb-3 ${
                 isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
               }`}>
                 Color
@@ -615,7 +592,7 @@ export default function ManageCategoriesScreen() {
                     isDarkMode ? 'bg-BackgroundDark' : 'bg-white'
                   }`}
                 >
-                  <Text className={`text-center font-montserrat-semibold ${
+                  <Text style={fontStyles('extrabold')}  className={`text-center font-montserrat-semibold ${
                     isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                   }`}>
                     Cancel
@@ -627,11 +604,24 @@ export default function ManageCategoriesScreen() {
                     isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
                   }`}
                 >
-                  <Text className="text-white text-center font-montserrat-semibold">
+                  <Text style={fontStyles('extrabold')}  className="text-white text-center font-montserrat-semibold">
                     {editingCategory ? 'Update' : 'Add'}
                   </Text>
                 </TouchableOpacity>
               </View>
+              
+              {/* Delete Category Button */}
+              {editingCategory && (
+                <TouchableOpacity
+                  onPress={() => handleDeleteCategory(editingCategory.id)}
+                  className={`p-4 rounded-lg mt-4 ${
+                    isDarkMode ? 'bg-red-700' : 'bg-red-500'
+                  }`}
+                >
+                  <Text style={fontStyles('extrabold')}  className="text-white text-center font-montserrat-semibold">
+                    Delete Category
+                  </Text>
+                </TouchableOpacity>)}
             </ScrollView>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -660,7 +650,7 @@ export default function ManageCategoriesScreen() {
               showsVerticalScrollIndicator={false}
               className="p-6"
             >
-              <Text className={`text-xl font-montserrat-bold mb-6 ${
+              <Text style={fontStyles('extrabold')}  className={`text-xl font-montserrat-bold mb-6 ${
                 isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
               }`}>
                 {editingSubcategory ? 'Edit Subcategory' : 'Add New Subcategory'}
@@ -670,7 +660,7 @@ export default function ManageCategoriesScreen() {
                 <View className={`mb-6 p-3 rounded-[20px] ${
                   isDarkMode ? 'bg-slate-800' : 'bg-Surface'
                 }`}>
-                  <Text className={`font-montserrat text-sm ${
+                  <Text style={fontStyles('extrabold')}  className={` text-sm ${
                     isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'
                   }`}>
                     Parent Category
@@ -680,9 +670,9 @@ export default function ManageCategoriesScreen() {
                       className="w-8 h-8 rounded-full items-center justify-center mr-2"
                       style={{ borderColor: parentCategoryForSubcategory.color, borderWidth: 2 }}
                     >
-                      <Text className="text-lg">{parentCategoryForSubcategory.icon}</Text>
+                      <Text style={fontStyles('extrabold')}  className="text-lg">{parentCategoryForSubcategory.icon}</Text>
                     </View>
-                    <Text className={`font-montserrat-medium ${
+                    <Text style={fontStyles('extrabold')}  className={` ${
                       isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                     }`}>
                       {parentCategoryForSubcategory.name}
@@ -692,7 +682,7 @@ export default function ManageCategoriesScreen() {
               )}
 
               <View className="mb-6">
-                <Text className={`font-montserrat-medium mb-2 ${
+                <Text style={fontStyles('extrabold')}  className={`font-montserrat-medium mb-2 ${
                   isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                 }`}>
                   Name
@@ -710,7 +700,7 @@ export default function ManageCategoriesScreen() {
                 />
               </View>
 
-              <Text className={`font-montserrat-medium mb-3 ${
+              <Text style={fontStyles('extrabold')}  className={`font-montserrat-medium mb-3 ${
                 isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
               }`}>
                 Color
@@ -737,7 +727,7 @@ export default function ManageCategoriesScreen() {
                     isDarkMode ? 'bg-BackgroundDark' : 'bg-white'
                   }`}
                 >
-                  <Text className={`text-center font-montserrat-semibold ${
+                  <Text style={fontStyles('extrabold')}  className={`text-center font-montserrat-semibold ${
                     isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'
                   }`}>
                     Cancel
@@ -749,15 +739,34 @@ export default function ManageCategoriesScreen() {
                     isDarkMode ? 'bg-PrimaryDark' : 'bg-Primary'
                   }`}
                 >
-                  <Text className="text-white text-center font-montserrat-semibold">
+                  <Text style={fontStyles('extrabold')}  className="text-white text-center font-montserrat-semibold">
                     {editingSubcategory ? 'Update' : 'Add'}
                   </Text>
                 </TouchableOpacity>
               </View>
+
+              {/* Delete Subcategory Button */}
+              {editingSubcategory && (
+                <TouchableOpacity
+                  onPress={() => handleDeleteSubcategory(editingSubcategory.id)}
+                  className={`p-4 rounded-lg mt-4 ${
+                    isDarkMode ? 'bg-red-800' : 'bg-red-500'
+                  }`}
+                >
+                  <Text style={fontStyles('extrabold')}  className="text-white text-center font-montserrat-semibold">
+                    Delete Subcategory
+                  </Text>
+                </TouchableOpacity>)}
             </ScrollView>
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
+      
+      <EmojiPicker
+        onEmojiSelected={handleEmojiSelect}
+        open={isEmojiPickerVisible}
+        onClose={() => setIsEmojiPickerVisible(false)}
+      />
     </View>
   );
 }
