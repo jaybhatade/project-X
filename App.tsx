@@ -1,5 +1,6 @@
-import { StatusBar } from 'expo-status-bar';
 import './global.css';
+import { StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native';
 import { ThemeProvider } from './src/contexts/ThemeContext';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { DatabaseProvider } from './src/contexts/DatabaseContext';
@@ -18,13 +19,15 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <DatabaseProvider>
-          <AppNavigator />
-          <StatusBar style="auto" />
-        </DatabaseProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <AuthProvider>
+          <DatabaseProvider>
+            <AppNavigator />
+            <StatusBar barStyle="default" />
+          </DatabaseProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </SafeAreaView>
   );
 }

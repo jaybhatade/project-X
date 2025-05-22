@@ -2,10 +2,10 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
-import BudgetProgressBar from './BudgetProgressBar';
 import * as db from '../../../db/dbUtils';
 import NoData from '../NoData';
 import { useAuth } from '../../contexts/AuthContext';
+import { ShoppingCart, ChevronRight } from 'lucide-react-native';
 
 // Budget and Category interfaces to match db types
 interface Budget {
@@ -27,6 +27,37 @@ interface Category {
   color: string;
   type: string;
 }
+
+// Modified BudgetProgressBar component to match the UI in the image
+const BudgetProgressBar = ({ 
+  percentUsed, 
+  spent, 
+  budgetLimit
+}: { 
+  percentUsed: number; 
+  spent: number; 
+  budgetLimit: number;
+}) => {
+  return (
+    <View style={styles.progressContainer}>
+      <View style={styles.progressBackground}>
+        <View 
+          style={[
+            styles.progressFill, 
+            { 
+              width: `${Math.min(percentUsed, 100)}%`,
+            }
+          ]} 
+        />
+      </View>
+      
+      <View style={styles.budgetTextContainer}>
+        <Text style={styles.budgetAmount}>₹{spent.toLocaleString()}</Text>
+        <Text style={styles.budgetTotal}>/₹{budgetLimit.toLocaleString()}</Text>
+      </View>
+    </View>
+  );
+};
 
 const BudgetListCards: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -82,15 +113,6 @@ const BudgetListCards: React.FC = () => {
     return categories.find(category => category.id === categoryId);
   };
 
-  // Get month name from month number
-  const getMonthName = (month: number) => {
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return months[month];
-  };
-
   // Navigate to budget screen
   const navigateToBudgetScreen = () => {
     // Navigate to the Budget tab in the MainTabs navigator
@@ -109,46 +131,25 @@ const BudgetListCards: React.FC = () => {
         style={[
           styles.container,
           { 
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
             width: isSingleItem ? '100%' : screenWidth * 0.8,
             marginRight: isSingleItem ? 0 : 12
           }
         ]}
       >
         <View style={styles.header}>
-          <View style={styles.categoryInfo}>
-            <View 
-              style={[
-                styles.iconContainer, 
-                { borderColor: category.color, borderWidth: 2 }
-              ]}
-            >
-              <Text style={{ color: '#FFFFFF', fontSize: 18 }}>{category.icon}</Text>
-            </View>
-            <Text
-              style={[
-                styles.categoryName,
-                { color: isDarkMode ? '#FFFFFF' : '#000000' }
-              ]}
-            >
-              {category.name}
-            </Text>
-          </View>
-          <Text
-            style={[
-              styles.dateRange,
-              { color: isDarkMode ? '#B0B0B0' : '#707070' }
-            ]}
-          >
-            {getMonthName(item.month)} {item.year}
+          <Text style={styles.categoryName}>
+            {category.name}
           </Text>
+          <TouchableOpacity style={styles.detailsLink}>
+            <Text style={styles.detailsText}>see details</Text>
+            <ChevronRight size={16} color="#4ADE80" />
+          </TouchableOpacity>
         </View>
         
         <BudgetProgressBar 
           percentUsed={item.percentUsed} 
           spent={item.spent} 
           budgetLimit={item.budgetLimit} 
-          categoryColor={category.color}
         />
       </TouchableOpacity>
     );
@@ -157,7 +158,7 @@ const BudgetListCards: React.FC = () => {
   // If loading or no data
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.loadingContainer}>
         <Text style={{
           color: isDarkMode ? '#FFFFFF' : '#000000',
           textAlign: 'center'
@@ -205,10 +206,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
   container: {
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    backgroundColor: '#1E293B', // Dark blue background as shown in the image
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -221,28 +229,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  categoryInfo: {
+  categoryName: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  detailsLink: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  categoryName: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  dateText: {
+  detailsText: {
     fontSize: 12,
+    color: '#4ADE80', // Green color for the "see details" text
   },
-  dateRange: {
-    fontSize: 12,
-    marginTop: 4,
+  progressContainer: {
+    marginTop: 8,
+  },
+  progressBackground: {
+    height: 8,
+    backgroundColor: '#374151', // Dark gray background for the progress bar
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#FF3B30', // Red color for the progress bar as shown in the image
+    borderRadius: 4,
+  },
+  budgetTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  budgetAmount: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  budgetTotal: {
+    fontSize: 14,
+    color: '#9CA3AF', // Light gray color for the total budget
+    marginLeft: 4,
   }
 });
 

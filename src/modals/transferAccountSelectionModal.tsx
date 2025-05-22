@@ -7,110 +7,127 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Alert
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { CheckCircle, X } from 'lucide-react-native';
+import fontStyles from '../utils/fontStyles';
 
-const TransferAccountSelectionModal = ({ 
-  accounts, 
-  accountId, 
-  setAccountId, 
+interface Account {
+  id: string;
+  name: string;
+  balance: number;
+  icon: string;
+}
+
+interface TransferAccountSelectionModalProps {
+  accounts: Account[];
+  accountId: string | null; // Changed to allow null for no selection
+  setAccountId: (id: string | null) => void; // Changed to allow null for deselection
+  setShowModal: (show: boolean) => void;
+  title: string;
+  isFromAccount?: boolean;
+  fromAccountId?: string | null; // Changed to allow null
+  toAccountId?: string | null; // Changed to allow null
+}
+
+const TransferAccountSelectionModal: React.FC<TransferAccountSelectionModalProps> = ({
+  accounts,
+  accountId,
+  setAccountId,
   setShowModal,
   title,
-  excludeAccountId = null // To prevent selecting the same account for both source and destination
+  isFromAccount,
+  fromAccountId,
+  toAccountId
 }) => {
   const { isDarkMode } = useTheme();
   
-  // Filter out excluded account if specified
-  const filteredAccounts = excludeAccountId 
-    ? accounts.filter(account => account.id !== excludeAccountId)
-    : accounts;
+  const handleAccountSelect = (selectedAccountId: string) => {
+    // If the account is already selected, deselect it
+    if (accountId === selectedAccountId) {
+      setAccountId(null);
+      setShowModal(false);
+      return;
+    }
+    
+    // Check if user is trying to select the same account for both source and destination
+    if (isFromAccount !== undefined) {
+      if (isFromAccount && selectedAccountId === toAccountId) {
+        Alert.alert(
+          "Invalid Selection",
+          "You cannot select the same account as both source and destination.",
+          [{ text: "OK" }]
+        );
+        return;
+      } else if (!isFromAccount && selectedAccountId === fromAccountId) {
+        Alert.alert(
+          "Invalid Selection",
+          "You cannot select the same account as both source and destination.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+    }
+    
+    setAccountId(selectedAccountId);
+    setShowModal(false);
+  };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.modalContainer}
+      className="flex-1 bg-black/80 justify-end"
     >
-      <View className={`rounded-tl-2xl rounded-tr-2xl p-5 max-h-[80%] min-h-[50%] ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <View style={styles.modalHeader}>
-          <Text style={[styles.modalTitle, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>{title}</Text>
+      <View className={`rounded-t-2xl p-5 max-h-[80%] min-h-[50%] ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        <View className="flex-row justify-between items-center mb-5">
+          <Text className={`${fontStyles.heading} ${isDarkMode ? 'text-white' : 'text-black'}`}>{title}</Text>
           <TouchableOpacity onPress={() => setShowModal(false)}>
             <X size={24} color={isDarkMode ? '#FFFFFF' : '#000000'} />
           </TouchableOpacity>
         </View>
 
         <FlatList
-          data={filteredAccounts}
+          data={accounts}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={[styles.accountItem, { borderBottomColor: isDarkMode ? '#2E2E2E' : '#F0F0F0' }]}
-              onPress={() => {
-                setAccountId(item.id);
-                setShowModal(false);
-              }}
+              className={`flex-row items-center p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}
+              onPress={() => handleAccountSelect(item.id)}
             >
-              <View style={styles.accountIconContainer}>
-                <Text style={{ fontSize: 20, color: '#FFFFFF' }}>{item.icon}</Text>
+              <View className="w-10 h-10 rounded-full bg-blue-500 justify-center items-center mr-4">
+                <Text className="text-xl text-white">{item.icon}</Text>
               </View>
               <View>
-                <Text style={[styles.accountName, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>{item.name}</Text>
-                <Text style={styles.accountBalance}>Balance: ₹{item.balance}</Text>
+                <Text className={`${fontStyles.body} ${isDarkMode ? 'text-white' : 'text-black'}`}>{item.name}</Text>
+                <Text className={`${fontStyles.caption} text-gray-500`}>Balance: ₹{item.balance}</Text>
               </View>
               {accountId === item.id && (
-                <View style={styles.selectedIndicator}>
+                <View className="ml-auto">
                   <CheckCircle size={24} color="#21965B" />
                 </View>
               )}
             </TouchableOpacity>
           )}
         />
+        
+        {/* Add a deselect button if an account is currently selected */}
+        {accountId && (
+          <TouchableOpacity 
+            className={`mt-4 p-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}
+            onPress={() => {
+              setAccountId(null);
+              setShowModal(false);
+            }}
+          >
+            <Text className={`${fontStyles.buttonText} text-center ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              Clear Selection
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'flex-end',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  accountItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    borderBottomWidth: 1,
-  },
-  accountIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-    backgroundColor: '#4687ED', // Blue for transfer accounts
-  },
-  accountName: {
-    fontSize: 16,
-  },
-  accountBalance: {
-    fontSize: 14,
-    color: '#707070',
-  },
-  selectedIndicator: {
-    marginLeft: 'auto',
-  },
-});
 
 export default TransferAccountSelectionModal;

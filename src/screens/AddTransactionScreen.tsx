@@ -18,7 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import CategorySelectionModal from '../modals/categorySelectionModal';
 import AccountSelectionModal from '../modals/AccountSelectionModal';
 import TransferAccountSelectionModal from '../modals/transferAccountSelectionModal';
-
+import fontStyles from '@/utils/fontStyles';
 // Add new interfaces
 interface Category {
   id: string;
@@ -546,7 +546,7 @@ const AddTransactionScreen = () => {
         ) : (
           <View className="flex-1 justify-center items-center bg-black bg-opacity-70">
             <View className={`m-5 p-5 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              <Text className={`text-lg font-medium mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+              <Text style={fontStyles('extrabold')} className={`text-lg font-medium mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
                 No Categories Found
               </Text>
               <Text className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -604,82 +604,86 @@ const AddTransactionScreen = () => {
       </Modal>
       
       {/* From Account Modal (for Transfer) */}
-      <Modal
-        visible={showFromAccountModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowFromAccountModal(false)}
-      >
-        {accounts.length > 0 ? (
-          <TransferAccountSelectionModal 
-            accounts={accounts}
-            accountId={fromAccountId}
-            setAccountId={setFromAccountId}
-            setShowModal={setShowFromAccountModal}
-            title="From Account"
-            excludeAccountId={toAccountId}
-          />
-        ) : (
-          <View className="flex-1 justify-center items-center bg-black bg-opacity-70">
-            <View className={`m-5 p-5 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              <Text className={`text-lg font-medium mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                No Accounts Found
-              </Text>
-              <Text className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                You need at least two accounts for transfers.
-              </Text>
-              <TouchableOpacity
-                className="bg-green-600 p-3 rounded-lg w-full items-center"
-                onPress={() => {
-                  setShowFromAccountModal(false);
-                  loadAccounts(); // Reload accounts
-                }}
-              >
-                <Text className="text-white font-medium">OK</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      </Modal>
-      
-      {/* To Account Modal (for Transfer) */}
-      <Modal
-        visible={showToAccountModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowToAccountModal(false)}
-      >
-        {accounts.length > 0 ? (
-          <TransferAccountSelectionModal 
-            accounts={accounts}
-            accountId={toAccountId}
-            setAccountId={setToAccountId}
-            setShowModal={setShowToAccountModal}
-            title="To Account"
-            excludeAccountId={fromAccountId}
-          />
-        ) : (
-          <View className="flex-1 justify-center items-center bg-black bg-opacity-70">
-            <View className={`m-5 p-5 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              <Text className={`text-lg font-medium mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                No Accounts Found
-              </Text>
-              <Text className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                You need at least two accounts for transfers.
-              </Text>
-              <TouchableOpacity
-                className="bg-green-600 p-3 rounded-lg w-full items-center"
-                onPress={() => {
-                  setShowToAccountModal(false);
-                  loadAccounts(); // Reload accounts
-                }}
-              >
-                <Text className="text-white font-medium">OK</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      </Modal>
+<Modal
+  visible={showFromAccountModal}
+  animationType="slide"
+  transparent={true}
+  onRequestClose={() => setShowFromAccountModal(false)}
+>
+  {accounts.length > 0 ? (
+    <TransferAccountSelectionModal 
+      accounts={accounts}
+      accountId={fromAccountId}
+      setAccountId={setFromAccountId}
+      setShowModal={setShowFromAccountModal}
+      title="From Account"
+      isFromAccount={true}
+      fromAccountId={fromAccountId}
+      toAccountId={toAccountId}
+    />
+  ) : (
+    <View className="flex-1 justify-center items-center bg-black bg-opacity-70">
+      <View className={`m-5 p-5 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        <Text className={`text-lg font-medium mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+          No Accounts Found
+        </Text>
+        <Text className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          You need at least two accounts for transfers.
+        </Text>
+        <TouchableOpacity
+          className="bg-green-600 p-3 rounded-lg w-full items-center"
+          onPress={() => {
+            setShowFromAccountModal(false);
+            loadAccounts(); // Reload accounts
+          }}
+        >
+          <Text className="text-white font-medium">OK</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )}
+</Modal>
+
+{/* To Account Modal (for Transfer) */}
+<Modal
+  visible={showToAccountModal}
+  animationType="slide"
+  transparent={true}
+  onRequestClose={() => setShowToAccountModal(false)}
+>
+  {accounts.length > 0 ? (
+    <TransferAccountSelectionModal 
+      accounts={accounts}
+      accountId={toAccountId}
+      setAccountId={setToAccountId}
+      setShowModal={setShowToAccountModal}
+      title="To Account"
+      isFromAccount={false}
+      fromAccountId={fromAccountId}
+      toAccountId={toAccountId}
+    />
+  ) : (
+    <View className="flex-1 justify-center items-center bg-black bg-opacity-70">
+      <View className={`m-5 p-5 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        <Text className={`text-lg font-medium mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+          No Accounts Found
+        </Text>
+        <Text className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          You need at least two accounts for transfers.
+        </Text>
+        <TouchableOpacity
+          className="bg-green-600 p-3 rounded-lg w-full items-center"
+          onPress={() => {
+            setShowToAccountModal(false);
+            loadAccounts(); // Reload accounts
+          }}
+        >
+          <Text className="text-white font-medium">OK</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )}
+</Modal>
 
       <View className={`p-5 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
         {/* Transaction Type Selector */}
@@ -688,7 +692,7 @@ const AddTransactionScreen = () => {
             className={`flex-1 py-2.5 items-center rounded-2xl ${type === 'expense' ? 'bg-green-600' : 'bg-transparent'}`}
             onPress={() => setType('expense')}
           >
-            <Text className={`font-semibold ${type === 'expense' ? 'text-white' : 'text-gray-500'}`}>
+            <Text style={fontStyles('extrabold')} className={`font-semibold ${type === 'expense' ? 'text-white' : 'text-gray-500'}`}>
               Expense
             </Text>
           </TouchableOpacity>
@@ -696,7 +700,7 @@ const AddTransactionScreen = () => {
             className={`flex-1 py-2.5 items-center rounded-2xl ${type === 'income' ? 'bg-green-600' : 'bg-transparent'}`}
             onPress={() => setType('income')}
           >
-            <Text className={`font-semibold ${type === 'income' ? 'text-white' : 'text-gray-500'}`}>
+            <Text style={fontStyles('extrabold')} className={`font-semibold ${type === 'income' ? 'text-white' : 'text-gray-500'}`}>
               Income
             </Text>
           </TouchableOpacity>
@@ -704,7 +708,7 @@ const AddTransactionScreen = () => {
             className={`flex-1 py-2.5 items-center rounded-2xl ${type === 'transfer' ? 'bg-green-600' : 'bg-transparent'}`}
             onPress={() => setType('transfer')}
           >
-            <Text className={`font-semibold ${type === 'transfer' ? 'text-white' : 'text-gray-500'}`}>
+            <Text style={fontStyles('extrabold')} className={`font-semibold ${type === 'transfer' ? 'text-white' : 'text-gray-500'}`}>
               Transfer
             </Text>
           </TouchableOpacity>
@@ -759,7 +763,7 @@ const AddTransactionScreen = () => {
           className="bg-green-600 p-4 rounded-lg items-center mt-5" 
           onPress={handleSubmit}
         >
-          <Text className="text-white text-base font-semibold">Add Transaction</Text>
+          <Text style={fontStyles('extrabold')} className="text-white text-lg ">Add Transaction</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
