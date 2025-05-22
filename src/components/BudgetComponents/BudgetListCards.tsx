@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Dimensions } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import * as db from '../../../db/dbUtils';
 import NoData from '../NoData';
 import { useAuth } from '../../contexts/AuthContext';
-import { ShoppingCart, ChevronRight } from 'lucide-react-native';
+import { ChevronRight } from 'lucide-react-native';
 
 // Budget and Category interfaces to match db types
 interface Budget {
@@ -38,22 +38,56 @@ const BudgetProgressBar = ({
   spent: number; 
   budgetLimit: number;
 }) => {
+  const remaining = budgetLimit - spent;
+  const isExceeded = spent > budgetLimit;
+  const displayPercent = Math.min(percentUsed, 100);
+  
+  // Determine progress bar color based on percentage used
+  const getProgressColor = (percent: number) => {
+    if (isExceeded) return '#FF3B30'; // Red for exceeded
+    if (percent >= 90) return '#FF3B30'; // Red
+    if (percent >= 70) return '#FFCC00'; // Yellow
+    return '#4ADE80'; // Green
+  };
+
+  // Get status text based on budget condition
+  const getStatusText = () => {
+    if (isExceeded) return 'Budget Exceeded';
+    if (percentUsed >= 90) return 'Almost Exceeded';
+    if (percentUsed >= 70) return 'Warning';
+    return 'Good';
+  };
+
+  // Get status color
+  const getStatusColor = () => {
+    if (isExceeded) return '#FF3B30';
+    if (percentUsed >= 90) return '#FF3B30';
+    if (percentUsed >= 70) return '#FFCC00';
+    return '#4ADE80';
+  };
+
   return (
-    <View style={styles.progressContainer}>
-      <View style={styles.progressBackground}>
+    <View className="mt-2">
+      <View className="h-2 bg-gray-700 rounded-full overflow-hidden mb-2">
         <View 
-          style={[
-            styles.progressFill, 
-            { 
-              width: `${Math.min(percentUsed, 100)}%`,
-            }
-          ]} 
+          className="h-full rounded-full"
+          style={{ 
+            width: `${displayPercent}%`,
+            backgroundColor: getProgressColor(percentUsed),
+          }} 
         />
       </View>
       
-      <View style={styles.budgetTextContainer}>
-        <Text style={styles.budgetAmount}>₹{spent.toLocaleString()}</Text>
-        <Text style={styles.budgetTotal}>/₹{budgetLimit.toLocaleString()}</Text>
+      <View className="flex-row justify-between items-center mt-1">
+        <View className="flex-row items-baseline">
+          <Text className={`text-2xl font-bold ${isExceeded ? 'text-red-500' : 'text-white'}`}>
+            ₹{Math.abs(remaining).toLocaleString()}
+          </Text>
+          <Text className="text-sm text-gray-400 ml-1">/₹{budgetLimit.toLocaleString()}</Text>
+        </View>
+        <Text className={`text-xs font-semibold`} style={{ color: getStatusColor() }}>
+          {getStatusText()}
+        </Text>
       </View>
     </View>
   );
@@ -127,21 +161,15 @@ const BudgetListCards: React.FC = () => {
 
     return (
       <TouchableOpacity
-        onPress={navigateToBudgetScreen}
-        style={[
-          styles.container,
-          { 
-            width: isSingleItem ? '100%' : screenWidth * 0.8,
-            marginRight: isSingleItem ? 0 : 12
-          }
-        ]}
+        onPress={() => navigation.navigate('BudgetCategoryDetails', { budget: item, category })}
+        className={`rounded-xl p-4 mb-3 bg-slate-800 shadow-md ${isSingleItem ? 'w-full' : 'w-4/5 mr-3'}`}
       >
-        <View style={styles.header}>
-          <Text style={styles.categoryName}>
+        <View className="flex-row justify-between items-center mb-3">
+          <Text className="text-2xl font-bold text-white">
             {category.name}
           </Text>
-          <TouchableOpacity style={styles.detailsLink}>
-            <Text style={styles.detailsText}>see details</Text>
+          <TouchableOpacity className="flex-row items-center gap-1">
+            <Text className="text-xs text-green-400">see details</Text>
             <ChevronRight size={16} color="#4ADE80" />
           </TouchableOpacity>
         </View>
@@ -158,11 +186,8 @@ const BudgetListCards: React.FC = () => {
   // If loading or no data
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={{
-          color: isDarkMode ? '#FFFFFF' : '#000000',
-          textAlign: 'center'
-        }}>
+      <View className="flex-1 justify-center items-center p-4">
+        <Text className={`text-center ${isDarkMode ? 'text-white' : 'text-black'}`}>
           Loading budgets...
         </Text>
       </View>
@@ -174,9 +199,9 @@ const BudgetListCards: React.FC = () => {
   }
 
   return (
-    <View style={styles.listContainer}>
+    <View className="flex-1 w-full">
       {isSingleItem ? (
-        <View style={styles.singleItemContainer}>
+        <View className="items-center w-full">
           {renderBudgetCard({ item: budgets[0] })}
         </View>
       ) : (
@@ -184,94 +209,13 @@ const BudgetListCards: React.FC = () => {
           data={budgets}
           renderItem={renderBudgetCard}
           keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
+          horizontal={false}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ width: '100%' }}
         />
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  listContainer: {
-    flex: 1,
-    width: '100%',
-  },
-  listContent: {
-    paddingHorizontal: 16,
-  },
-  singleItemContainer: {
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    width: '100%',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  container: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    backgroundColor: '#1E293B', // Dark blue background as shown in the image
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  categoryName: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  detailsLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  detailsText: {
-    fontSize: 12,
-    color: '#4ADE80', // Green color for the "see details" text
-  },
-  progressContainer: {
-    marginTop: 8,
-  },
-  progressBackground: {
-    height: 8,
-    backgroundColor: '#374151', // Dark gray background for the progress bar
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#FF3B30', // Red color for the progress bar as shown in the image
-    borderRadius: 4,
-  },
-  budgetTextContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  budgetAmount: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  budgetTotal: {
-    fontSize: 14,
-    color: '#9CA3AF', // Light gray color for the total budget
-    marginLeft: 4,
-  }
-});
 
 export default BudgetListCards;

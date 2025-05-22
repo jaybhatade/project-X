@@ -13,6 +13,7 @@ import NotificationsScreen from '../screens/NotificationsScreen';
 import DatabaseScreen from '../screens/DatabaseScreen';
 import IncomeScreen from '../screens/StatsScreens/IncomeScreen';
 import ExpenseScreen from '../screens/StatsScreens/ExpenseScreen';
+import BudgetCategoryDetailsScreen from '../screens/BudgetCategoryDetailsScreen';
 import { RootStackParamList } from '../types/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -116,6 +117,7 @@ export default function AppNavigator() {
             }} />
             <Stack.Screen name="IncomeDetails" component={IncomeScreen} options={{ headerShown: false }} />
             <Stack.Screen name="ExpenseDetails" component={ExpenseScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="BudgetCategoryDetails" component={BudgetCategoryDetailsScreen} options={{ headerShown: false }} />
           </>
         )}
       </Stack.Navigator>
