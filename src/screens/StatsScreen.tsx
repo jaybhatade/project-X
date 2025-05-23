@@ -199,20 +199,20 @@ export default function StatsScreen() {
 
   return (
     <ScrollView 
-      style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#F5F5F5' }]}
+      className={`flex-1 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#21965B']}
+          colors={['#0ea5e9']}
           tintColor={isDarkMode ? '#FFFFFF' : '#000000'}
-          progressBackgroundColor={isDarkMode ? '#1E1E1E' : '#FFFFFF'}
+          progressBackgroundColor={isDarkMode ? '#1E293B' : '#FFFFFF'}
         />
       }
     >
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+      <View className="p-5 pt-11">
+        <View className="mb-5">
+          <Text className={`text-2xl font-bold ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
             Financial Overview
           </Text>
         </View>
@@ -231,49 +231,47 @@ export default function StatsScreen() {
         />
 
         {/* Monthly Summary Card */}
-        <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}>
-          <View style={styles.summaryContainer}>
+        <View className={`rounded-xl p-4 mb-4 ${isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'}`}>
+          <View className="flex-row justify-around mt-2">
             {/* Touchable Income Summary */}
             <TouchableOpacity 
-              style={styles.summaryItem}
+              className="items-center py-2.5 px-5 rounded-lg"
               onPress={navigateToIncomeDetails}
               activeOpacity={0.7}
             >
-              <View style={styles.summaryItemInner}>
-                <Text style={[styles.summaryLabel, { color: isDarkMode ? '#B0B0B0' : '#666666' }]}>
+              <View className="items-center">
+                <Text className={`text-sm mb-1 ${isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'}`}>
                   Total Income
                 </Text>
-                <Text style={[styles.summaryValue, styles.incomeText]}>
+                <Text className="text-xl font-bold text-Primary mb-1.5">
                   {formatCurrency(chartData.totalIncome)}
                 </Text>
-                <View style={styles.viewDetailsContainer}>
-                  <Text style={[styles.viewDetailsText, { color: '#21965B' }]}>View Details</Text>
+                <View className="mt-1.5">
+                  <Text className="text-xs font-medium text-Primary">View Details</Text>
                 </View>
               </View>
             </TouchableOpacity>
             
             {/* Touchable Expense Summary */}
             <TouchableOpacity 
-              style={styles.summaryItem}
+              className="items-center py-2.5 px-5 rounded-lg"
               onPress={navigateToExpenseDetails}
               activeOpacity={0.7}
             >
-              <View style={styles.summaryItemInner}>
-                <Text style={[styles.summaryLabel, { color: isDarkMode ? '#B0B0B0' : '#666666' }]}>
+              <View className="items-center">
+                <Text className={`text-sm mb-1 ${isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'}`}>
                   Total Expenses
                 </Text>
-                <Text style={[styles.summaryValue, styles.expenseText]}>
+                <Text className="text-xl font-bold text-[#FF3B30] mb-1.5">
                   {formatCurrency(chartData.totalExpense)}
                 </Text>
-                <View style={styles.viewDetailsContainer}>
-                  <Text style={[styles.viewDetailsText, { color: '#FF3B30' }]}>View Details</Text>
+                <View className="mt-1.5">
+                  <Text className="text-xs font-medium text-[#FF3B30]">View Details</Text>
                 </View>
               </View>
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Bar Chart */}
       </View>
     </ScrollView>
   );

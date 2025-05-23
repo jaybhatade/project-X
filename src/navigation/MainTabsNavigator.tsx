@@ -37,7 +37,7 @@ export default function MainTabsNavigator() {
             justifyContent: 'center',
             alignItems: 'center',
           },
-          tabBarActiveTintColor: '#21965B',
+          tabBarActiveTintColor: '#0ea5e9',
           tabBarInactiveTintColor: '#B0B0B0',
           tabBarShowLabel: false,
           tabBarItemStyle: {
@@ -80,7 +80,7 @@ export default function MainTabsNavigator() {
         />
       </Tab.Navigator>
       <TouchableOpacity
-        className="bg-green-600 border-[6
+        className="bg-Primary border-[6
         px] border-slate-800 rounded-full p-4 absolute bottom-6 left-1/2 -translate-x-1/2"
         onPress={() => navigation.navigate('Add')}
       >

@@ -23,6 +23,7 @@ import { chatTheme } from '../../utils/chatTheme';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import ChatHistoryList from './ChatHistoryList';
+import fontStyles from '@/utils/fontStyles';
 
 export default function ChatScreen() {
   const { 
@@ -94,7 +95,8 @@ export default function ChatScreen() {
     container: {
       flex: 1,
       backgroundColor: theme.background,
-      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
+      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+      paddingBottom: 90,
     },
     sidebar: {
       width: 280,
@@ -139,7 +141,7 @@ export default function ChatScreen() {
     },
     welcomeTitle: {
       fontSize: 24,
-      fontWeight: 'bold', 
+      ...fontStyles('extrabold'),
       textAlign: 'center',
       marginBottom: 8,
       color: theme.text
@@ -153,7 +155,7 @@ export default function ChatScreen() {
     },
     suggestion: {
       backgroundColor: theme.primaryLight,
-      borderRadius: 12,
+      borderRadius: 20,
       padding: 16,
       marginBottom: 12,
       flexDirection: 'row',
@@ -161,7 +163,7 @@ export default function ChatScreen() {
     },
     suggestionText: {
       color: isDarkMode ? theme.text : theme.primaryDark,
-      fontSize: 16,
+      fontSize: 14,
       flex: 1,
       marginLeft: 12,
     },
@@ -278,11 +280,6 @@ export default function ChatScreen() {
       text: 'Where am I spending the most money?',
       component: MaterialIcons
     },
-    { 
-      icon: 'piggy-bank', 
-      text: 'What are my financial goals?',
-      component: FontAwesome5
-    }
   ];
 
   return (

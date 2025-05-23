@@ -62,7 +62,7 @@ const BudgetPieChart: React.FC<BudgetPieChartProps> = ({
     <View className="items-center mt-4 mb-4">
       <PieChart
         data={[
-          { value: budgetData.spent, color: '#21965B' }, // Red for spent amount
+          { value: budgetData.spent, color: '#0ea5e9' }, // Red for spent amount
           { value: budgetData.remaining, color: '#1E293B' }, // Green for remaining amount
         ]}
         radius={150}
@@ -87,7 +87,7 @@ const BudgetPieChart: React.FC<BudgetPieChartProps> = ({
           <Text style={fontStyles('extrabold')}  className="text-slate-500">Remaining</Text>
         </View>
         <View className="flex-row items-center">
-          <View className="w-3 h-3 rounded-full bg-[#21965B] mr-2" />
+          <View className="w-3 h-3 rounded-full bg-Primary mr-2" />
           <Text style={fontStyles('extrabold')}  className="text-slate-500">Spent</Text>
         </View>
       </View>

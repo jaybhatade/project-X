@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -93,36 +93,42 @@ export default function IncomeScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#F5F5F5' }]}>
+    <View className={`flex-1 ${isDarkMode ? 'bg-BackgroundDark' : 'bg-Background'}`}>
       {/* Header */}
-      <View style={styles.header}>
+      <View className="flex-row justify-between items-center px-5 pt-12 pb-5">
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#FFFFFF' : '#000000'} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+        <Text className={`text-xl font-bold ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
           Income Breakdown
         </Text>
-        <View style={{ width: 24 }} />
+        <View className="w-6" />
       </View>
       
       {/* Duration Selector */}
-      <View style={styles.durationSelector}>
+      <View className="flex-row px-5 mb-5">
         {DURATION_OPTIONS.map((option) => (
           <TouchableOpacity
             key={option.value}
-            style={[
-              styles.durationOption,
-              selectedDuration === option.value && 
-              { backgroundColor: isDarkMode ? '#21965B' : '#CBFAE0' }
-            ]}
+            className={`py-2 px-3 rounded-full mr-2 ${
+              selectedDuration === option.value 
+                ? isDarkMode 
+                  ? 'bg-PrimaryDark' 
+                  : 'bg-[#CBFAE0]'
+                : ''
+            }`}
             onPress={() => setSelectedDuration(option.value)}
           >
             <Text
-              style={[
-                styles.durationText,
-                selectedDuration === option.value && 
-                { color: isDarkMode ? '#FFFFFF' : '#21965B' }
-              ]}
+              className={`text-xs ${
+                selectedDuration === option.value
+                  ? isDarkMode
+                    ? 'text-white'
+                    : 'text-Primary'
+                  : isDarkMode
+                    ? 'text-TextSecondaryDark'
+                    : 'text-TextSecondary'
+              }`}
             >
               {option.label}
             </Text>
@@ -135,40 +141,40 @@ export default function IncomeScreen() {
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={onRefresh}
-            colors={['#21965B']} 
-            tintColor={isDarkMode ? '#FFFFFF' : '#21965B'}
+            colors={['#0ea5e9']} 
+            tintColor={isDarkMode ? '#FFFFFF' : '#0ea5e9'}
             title="Pull to refresh"
             titleColor={isDarkMode ? '#FFFFFF' : '#666666'}
           />
         }
       >
         {/* Summary Card */}
-        <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}>
-          <Text style={[styles.cardTitle, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+        <View className={`mx-5 rounded-xl p-4 mb-4 ${isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'}`}>
+          <Text className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
             Total Income
           </Text>
-          <Text style={[styles.totalAmount, { color: '#21965B' }]}>
+          <Text className="text-2xl font-bold text-Primary">
             {formatCurrency(totalIncome)}
           </Text>
         </View>
         
         {/* Pie Chart */}
         {pieData.length > 0 ? (
-          <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}>
-            <Text style={[styles.cardTitle, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+          <View className={`mx-5 rounded-xl p-4 mb-4 ${isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'}`}>
+            <Text className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
               Income by Category
             </Text>
-            <View style={styles.chartContainer}>
+            <View className="items-center">
               <PieChart
                 donut
                 innerRadius={70}
                 data={pieData}
                 centerLabelComponent={() => (
-                  <View style={styles.centerLabel}>
-                    <Text style={{ color: isDarkMode ? '#FFFFFF' : '#000000', fontSize: 18 }}>
+                  <View className="items-center">
+                    <Text className={`text-lg ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
                       Total
                     </Text>
-                    <Text style={{ color: '#21965B', fontSize: 14 }}>
+                    <Text className="text-sm text-Primary">
                       {formatCurrency(totalIncome)}
                     </Text>
                   </View>
@@ -177,11 +183,11 @@ export default function IncomeScreen() {
             </View>
             
             {/* Legend */}
-            <View style={styles.legendContainer}>
+            <View className="mt-4">
               {pieData.map((item, index) => (
-                <View key={index} style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-                  <Text style={[styles.legendText, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+                <View key={index} className="flex-row items-center mb-2">
+                  <View className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }} />
+                  <Text className={`text-sm ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
                     {item.name} ({item.text})
                   </Text>
                 </View>
@@ -189,34 +195,34 @@ export default function IncomeScreen() {
             </View>
           </View>
         ) : (
-          <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}>
-            <Text style={[styles.emptyMessage, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+          <View className={`mx-5 rounded-xl p-4 mb-4 ${isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'}`}>
+            <Text className={`text-center ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
               No income data for the selected period
             </Text>
           </View>
         )}
         
         {/* Category List */}
-        <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF' }]}>
-          <Text style={[styles.cardTitle, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+        <View className={`mx-5 rounded-xl p-4 mb-4 ${isDarkMode ? 'bg-SurfaceDark' : 'bg-Surface'}`}>
+          <Text className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
             Income Details
           </Text>
           
           {categoryData.map((category, index) => (
-            <View key={index} style={styles.categoryItem}>
-              <View style={styles.categoryInfo}>
-              <View style={[styles.categoryIcon, { borderColor: category.categoryColor, borderWidth: 2 }]}>
+            <View key={index} className="flex-row justify-between items-center mb-4">
+              <View className="flex-row items-center">
+                <View className="w-10 h-10 rounded-full items-center justify-center mr-3" style={{ borderColor: category.categoryColor, borderWidth: 2 }}>
                   <Text>{category.categoryIcon}</Text>
                 </View>
-                <Text style={[styles.categoryName, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+                <Text className={`text-base ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
                   {category.categoryName}
                 </Text>
               </View>
               <View>
-                <Text style={[styles.categoryAmount, { color: '#21965B' }]}>
+                <Text className="text-base font-semibold text-Primary">
                   {formatCurrency(category.amount)}
                 </Text>
-                <Text style={styles.categoryPercentage}>
+                <Text className={`text-xs ${isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary'}`}>
                   {Math.round(category.percentage)}% of total
                 </Text>
               </View>
@@ -224,7 +230,7 @@ export default function IncomeScreen() {
           ))}
           
           {categoryData.length === 0 && (
-            <Text style={[styles.emptyMessage, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+            <Text className={`text-center ${isDarkMode ? 'text-TextPrimaryDark' : 'text-TextPrimary'}`}>
               No income data to display
             </Text>
           )}
@@ -233,122 +239,3 @@ export default function IncomeScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  durationSelector: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  durationOption: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  durationText: {
-    fontSize: 12,
-    color: '#666666',
-  },
-  card: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  totalAmount: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 8,
-  },
-  chartContainer: {
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  centerLabel: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  legendContainer: {
-    marginTop: 20,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  legendText: {
-    fontSize: 14,
-  },
-  categoryItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
-  },
-  categoryInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  categoryIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  categoryName: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  categoryAmount: {
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'right',
-  },
-  categoryPercentage: {
-    fontSize: 12,
-    color: '#666666',
-    textAlign: 'right',
-  },
-  emptyMessage: {
-    textAlign: 'center',
-    paddingVertical: 20,
-    fontStyle: 'italic',
-  },
-});

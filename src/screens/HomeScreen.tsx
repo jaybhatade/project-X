@@ -104,7 +104,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={() => setActiveTab('Dashboard')} 
-          className={`flex-1 items-center py-2 rounded-full ${activeTab === 'Dashboard' ? 'bg-Secondary' : ''}`}
+          className={`flex-1 items-center py-2 rounded-full ${activeTab === 'Dashboard' ? 'bg-Primary' : ''}`}
         >
           <Text className={`text-base font-montserrat-semibold ${activeTab === 'Dashboard' ? 'text-white' : (isDarkMode ? 'text-TextSecondaryDark' : 'text-TextSecondary')}`}>Dashboard</Text>
         </TouchableOpacity>

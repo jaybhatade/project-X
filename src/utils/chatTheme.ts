@@ -21,23 +21,23 @@ export const chatTheme = {
     modalBackground: 'rgba(0,0,0,0.4)'
   },
   dark: {
-    primary: '#21965B', // Keep brand color consistent
-    primaryLight: '#1A332A', // Darker shade for dark mode
-    primaryDark: '#27B36E', // Brighter for dark mode
-    background: '#000000',
-    card: '#1E1E1E',
-    surface: '#262626',
+    primary: '#0ea5e9', // Keep brand color consistent
+    primaryLight: '#0369a1', // Darker shade for dark mode
+    primaryDark: '#38bdf8', // Brighter for dark mode
+    background: '#0F172A',
+    card: '#1E293B',
+    surface: '#1E293B',
     text: '#ECEDEE', // Light text for dark mode
     textSecondary: '#A1A1AA',
     border: '#303030',
     error: '#F87171',
-    highlight: '#1A332A',
-    userBubble: '#21965B',
+    highlight: '#1E293B',
+    userBubble: '#0ea5e9',
     userBubbleText: '#FFFFFF',
-    aiBubble: '#303030',
+    aiBubble: '#1E293B',
     aiBubbleText: '#ECEDEE',
     buttonDisabled: '#525252',
-    inputBackground: '#262626',
+    inputBackground: '#1E293B',
     modalBackground: 'rgba(0,0,0,0.7)'
   }
 }; 

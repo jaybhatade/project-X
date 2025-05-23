@@ -36,7 +36,7 @@ const MyDarkTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    background: '#121212',
+    background: '#0ea5e9',
   },
 };
 
@@ -47,7 +47,7 @@ export default function AppNavigator() {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#21965B" />
+        <ActivityIndicator size="large" color="#0284c7" />
       </View>
     );
   }
@@ -76,43 +76,43 @@ export default function AppNavigator() {
             <Stack.Screen name="Add" component={AddTransactionScreen} options={{
               headerShown: true,
               title: 'Add Transaction',
-              headerStyle: { backgroundColor: '#21965B' },
+              headerStyle: { backgroundColor: '#0ea5e9' },
               headerTintColor: '#FFFFFF',
             }} />
             <Stack.Screen name="Profile" component={ProfileScreen} options={{
               headerShown: true,
               title: 'Profile',
-              headerStyle: { backgroundColor: '#21965B' },
+              headerStyle: { backgroundColor: '#0ea5e9' },
               headerTintColor: '#FFFFFF',
             }} />
             <Stack.Screen name="Notifications" component={NotificationsScreen} options={{
               headerShown: true,
               title: 'Notifications',
-              headerStyle: { backgroundColor: '#21965B' },
+              headerStyle: { backgroundColor: '#0284c7' },
               headerTintColor: '#FFFFFF',
             }} />
             <Stack.Screen name="ManageCategories" component={ManageCategoriesScreen} options={{
               headerShown: true,
               title: 'Manage Categories',
-              headerStyle: { backgroundColor: '#21965B' },
+              headerStyle: { backgroundColor: '#0284c7' },
               headerTintColor: '#FFFFFF',
             }} />
             <Stack.Screen name="ManageAccounts" component={ManageAccountsScreen} options={{
               headerShown: true,
               title: 'Manage Accounts',
-              headerStyle: { backgroundColor: '#21965B' },
+              headerStyle: { backgroundColor: '#0284c7' },
               headerTintColor: '#FFFFFF',
             }} />
             <Stack.Screen name="AllTransactions" component={AllTransactionsScreen} options={{
               headerShown: true,
               title: 'All Transactions',
-              headerStyle: { backgroundColor: '#21965B' },
+              headerStyle: { backgroundColor: '#0284c7' },
               headerTintColor: '#FFFFFF',
             }} />
             <Stack.Screen name="Database" component={DatabaseScreen} options={{
               headerShown: true,
               title: 'Database',
-              headerStyle: { backgroundColor: '#21965B' },
+              headerStyle: { backgroundColor: '#0284c7' },
               headerTintColor: '#FFFFFF',
             }} />
             <Stack.Screen name="IncomeDetails" component={IncomeScreen} options={{ headerShown: false }} />
